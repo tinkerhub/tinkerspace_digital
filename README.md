@@ -1,5 +1,6 @@
 
-# TinkerHub Community Connect 
+# # TinkerSpace Connect
+ 
 
   ![TinkerHub](frontend/public/images/tinkerHub.gif)
 

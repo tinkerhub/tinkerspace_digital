@@ -13,7 +13,7 @@ function App() {
         const fetchRecords = async () => {
             try {
                 // Fetch data from the server
-                const response = await fetch('http://localhost:8000/recods');
+                const response = await fetch('http://localhost:8000/records');
                 
                 // Throw an error if the response is not ok
                 if (!response.ok) {

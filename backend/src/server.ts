@@ -12,12 +12,15 @@ app.use(oakCors());
 
 // Define a middleware function for the '/recodes' endpoint
 app.use(async (ctx) => {
-  if (ctx.request.url.pathname === "/recods") {
+  if (ctx.request.url.pathname === "/records") {
     const currentDate = new Date();
     // Format the date as 'YYYY-MM-DD'
     const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
     
     try {
+      
+      // "Issue: Timezone Mismatch in Date Filtering
+      // Description: When filtering data based on a date, the filter does not always return the expected results
       const filterByFormula = "DATETIME_FORMAT({Loged in time}, 'YYYY-MM-DD') = '2023-11-02'";
       // const filterByFormula = `DATETIME_FORMAT({Loged in time}, 'YYYY-MM-DD') = '${formattedDate}'`;
       // const filterByFormula = `DATETIME_FORMAT(SET_TIMEZONE({Loged in time}, 'Asia/Kolkata'), 'YYYY-MM-DD') = '${formattedDate}'`;

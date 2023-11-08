@@ -2,6 +2,7 @@
 # TinkerSpace Connect
 
   ![TinkerHub](frontend/public/images/tinkerHub.gif)
+  
 
 ## Introduction
 
@@ -12,6 +13,10 @@
 	However, as our community grows, connecting learners and mentors can become challenging. To address this, we’ve developed a solution: when submitting the ‘Make Your Attendance Every Visit!’ form, members can now indicate whether they are a mentor or a mentee. This information, along with their name, the framework they’re learning, and their picture, is displayed on a TV screen at TinkerSpace. This feature makes it easier for members to identify and connect with each other.
 	
 	We believe this project will enhance the learning experience at TinkerHub by facilitating easier connections between members. We also encourage contributors to add new features and improvements to this project. Let’s learn, build, and grow together with TinkerHub Community!
+
+### Project Sample Picture
+
+	![TinkerHub](frontend/public/images/sample.png)
 
 ## Getting Started
 

@@ -23,7 +23,7 @@ function Cards(props) {
   
   // Filter mentors and mentees from the data
   const mentors = datas.filter(data => data.fields['Are you a Mentor or Mentee?'] === 'Mentor');
-  
+
   const [mentees, setMentees] = useState([]);
    useEffect(() => {
     setMentees(datas.filter(data => data.fields['Are you a Mentor or Mentee?'] === 'Mentee'));
@@ -124,8 +124,7 @@ var numberOfCards1 = mentors.length; // get the number of cards after sorting
     autoplaySpeed: 2000, 
     
   };
-
-
+  
 // Render the component
 return (
     <>

@@ -1,0 +1,6 @@
+{
+    "scripts": {
+        "start:backend": "cd backend && deno run --allow-net --allow-read --watch src/server.ts",
+        "start:frontend": "cd frontend && npm run start:frontend"
+      }
+}

@@ -1,5 +1,5 @@
 import { Application } from "https://deno.land/x/oak@v12.6.1/mod.ts";
-import { config } from "https://deno.land/x/dotenv/mod.ts";
+// import { config } from "https://deno.land/x/dotenv/mod.ts";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { fetchAirtableData } from "./util/AirtablUtil.ts"
 
@@ -24,7 +24,8 @@ app.use(async (ctx) => {
       const filterByFormula = `DATETIME_FORMAT({Loged in time}, 'YYYY-MM-DD') = '${formattedDate}'`;
 
       // Fetch records from Airtable
-      const records = await fetchAirtableData(config().AIRTABLE_API_KEY,config().AIRTABLE_BASE_ID,config().AIRTABLE_TABLE_NAME,filterByFormula);
+      // const records = await fetchAirtableData(config().AIRTABLE_API_KEY,config().AIRTABLE_BASE_ID,config().AIRTABLE_TABLE_NAME,filterByFormula);
+      const records = await fetchAirtableData(Deno.env.get("AIRTABLE_API_KEY"),Deno.env.get("AIRTABLE_BASE_ID"),Deno.env.get("AIRTABLE_TABLE_NAME"),filterByFormula);
 
       ctx.response.body = records;
    

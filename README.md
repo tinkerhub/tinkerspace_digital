@@ -16,7 +16,7 @@
 
 ### Project Sample Picture
 
-	![TinkerHub](frontend/public/images/sample.png)
+  ![TinkerHub](frontend/public/images/sample.png)
 
 ## Getting Started
 

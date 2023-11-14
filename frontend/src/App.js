@@ -13,7 +13,9 @@ function App() {
         const fetchRecords = async () => {
             try {
                 // Fetch data from the server
-                const response = await fetch('http://localhost:8000/records');
+                // const response = await fetch('http://localhost:8000/records');
+                const response = await fetch('https://tinker-backend-bbjncdnbpby9.deno.dev/records');
+
                 
                 // Throw an error if the response is not ok
                 if (!response.ok) {

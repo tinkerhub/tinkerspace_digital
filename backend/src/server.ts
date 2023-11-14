@@ -5,8 +5,8 @@ import { fetchAirtableData } from "./util/AirtablUtil.ts"
 
 // Create a new Oak application
 const app = new Application();
-// const PORT = 8000;
-const PORT = Deno.env.get("PORT");
+const PORT = 8000;
+// const PORT = Deno.env.get("PORT");
 
 // Enable CORS for all routes
 app.use(oakCors());

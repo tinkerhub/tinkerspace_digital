@@ -63,7 +63,7 @@ function Cards(props) {
             <img className="w-[150px] h-[150px] object-cover rounded-[4px]" src={url ? url : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
             <h2 className="w-[150px] h-[24px] text-[20px] font-bold">{truncate(data.fields['First name (from Your name)'][0], 11)}</h2>
             <hr className=' border-t-[2px]' style={{borderColor: '#876100'}} />
-            <p className="w-[150px] h-[22px] text-[18px]">{data.fields["Enter the domain that you will be working on."] ? data.fields["Enter the domain that you will be working on."] : 'Undefined' }</p>
+            <p className="w-[150px] h-[22px] text-[18px]">{data.fields["Enter the domain that you will be working on."] ? truncate(data.fields["Enter the domain that you will be working on."],10) : 'Undefined' }</p>
             <p className="w-[150px] h-[22px] text-[18px]" style={{color: '#876100'}}>{data.fields["What will you be doing at the space today?"]}</p>
           </div>
         </div>
@@ -91,7 +91,7 @@ const renderCardMentee = (data) => {
                     <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={url ? url : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
                     <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold">{truncate(data.fields['First name (from Your name)'][0], 11)}</h2>
                     <hr className=' border-t-[1px]' style={{borderColor: '#876100'}} />
-                    <p className="w-[117.66px] h-[8px] text-[14.12px]">{data.fields["Enter the domain that you will be working on."] ? data.fields["Enter the domain that you will be working on."] : 'Undefined' }</p>
+                    <p className="w-[117.66px] h-[8px] text-[14.12px]">{data.fields["Enter the domain that you will be working on."] ? truncate(data.fields["Enter the domain that you will be working on."],10) : 'Undefined' }</p>
                     <p className="w-[117.66px] h-[17px] text-[14.12px]" style={{color: '#876100'}}>{data.fields["What will you be doing at the space today?"]}</p>
                 </div>  
             </div>

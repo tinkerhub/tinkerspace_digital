@@ -7,7 +7,7 @@ import "slick-carousel/slick/slick-theme.css";
 // Function to truncate a string to a certain length
 function truncate(str, length) {
   if (str === undefined) {
-      return 'Anonymous';
+      return null;
   } else {
       if (str.length > length) {
           const end = str.lastIndexOf(' ', 12);
@@ -46,11 +46,19 @@ function Cards(props) {
 
   // Function to render mentor card
   const renderCardMentor = (data) => {
+
+    // If the name is not present, return null
+    if (!data.fields['First name (from Your name)']) {
+      return null;
+    }
+
     let url;
     if (
       data.fields &&
       data.fields["Enter your Photo (from Your name)"] &&
-      data.fields["Enter your Photo (from Your name)"].length > 0
+      data.fields["Enter your Photo (from Your name)"].length > 0 &&
+      data.fields["Enter your Photo (from Your name)"][0].thumbnails &&
+      data.fields["Enter your Photo (from Your name)"][0].thumbnails.large
     ) {
       url = data.fields["Enter your Photo (from Your name)"][0].thumbnails.large.url;
     }
@@ -64,7 +72,7 @@ function Cards(props) {
             <h2 className="w-[150px] h-[24px] text-[20px] font-bold">{truncate(data.fields['First name (from Your name)'][0], 11)}</h2>
             <hr className=' border-t-[2px]' style={{borderColor: '#876100'}} />
             <p className="w-[150px] h-[22px] text-[18px]">{data.fields["Enter the domain that you will be working on."] ? truncate(data.fields["Enter the domain that you will be working on."],10) : 'Undefined' }</p>
-            <p className="w-[150px] h-[22px] text-[18px]" style={{color: '#876100'}}>{truncate(data.fields["What will you be doing at the space today?"],19)}</p>
+            <p className="w-[150px] h-[22px] text-[18px]" style={{color: '#876100'}}>{data.fields["What will you be doing at the space today?"] ? truncate(data.fields["What will you be doing at the space today?"],19) : 'Undefined'}</p>
           </div>
         </div>
       </div>
@@ -74,11 +82,19 @@ function Cards(props) {
 
 // Function to render mentee card
 const renderCardMentee = (data) => {
+
+  // If the name is not present, return null
+  if (!data.fields['First name (from Your name)']) {
+    return null;
+  }
+
     let url;
     if (
       data.fields &&
       data.fields["Enter your Photo (from Your name)"] &&
-      data.fields["Enter your Photo (from Your name)"].length > 0
+      data.fields["Enter your Photo (from Your name)"].length > 0 &&
+      data.fields["Enter your Photo (from Your name)"][0].thumbnails &&
+      data.fields["Enter your Photo (from Your name)"][0].thumbnails.large
     ) {
       url = data.fields["Enter your Photo (from Your name)"][0].thumbnails.large.url;
     }
@@ -92,7 +108,7 @@ const renderCardMentee = (data) => {
                     <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold">{truncate(data.fields['First name (from Your name)'][0], 11)}</h2>
                     <hr className=' border-t-[1px]' style={{borderColor: '#876100'}} />
                     <p className="w-[117.66px] h-[8px] text-[14.12px]">{data.fields["Enter the domain that you will be working on."] ? truncate(data.fields["Enter the domain that you will be working on."],10) : 'Undefined' }</p>
-                    <p className="w-[117.66px] h-[17px] text-[14.12px]" style={{color: '#876100'}}>{truncate(data.fields["What will you be doing at the space today?"],19)}</p>
+                    <p className="w-[117.66px] h-[17px] text-[14.12px]" style={{color: '#876100'}}>{data.fields["What will you be doing at the space today?"] ? truncate(data.fields["What will you be doing at the space today?"],19) : 'Undefined'}</p>
                 </div>  
             </div>
         </div>

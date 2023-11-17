@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import Navbarr from './components/Navbar/Navbar';
 import Cards from './components/Cards/Cards';
 import './fonts/fonts.css';
+import WPage from './components/WelcomePage/WPage';
+
 
 function App() {
     // Initialize state to hold fetched data
     const [data, setData] = useState([]);
+    const [showWPage, setShowWPage] = useState(true);
 
     // Use useEffect to fetch data when the component mounts
     useEffect(() => {
@@ -41,10 +44,25 @@ function App() {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowWPage(false);
+        }, 6500); // Show <WPage /> for 30 seconds
+
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <div className='App' style={{ fontFamily: 'ClashDisplay' }}>
-            <Navbarr />
-            <Cards data={data} /> 
+              {showWPage ? (
+                <WPage />
+            ) : (
+                <>
+                    <Navbarr />
+                    <Cards data={data} />
+                </>
+            )}
+
         </div>
     );
 }

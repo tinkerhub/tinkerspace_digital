@@ -110,7 +110,13 @@ function WPage() {
   }, []);
 
   return (
-    <div className='flex flex-col items-center justify-center h-screen'>
+    <div className='flex flex-col items-center justify-center h-screen'
+    style={{
+      backgroundImage: `url('https://www.tinkerhub.org/files/Ext.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}
+    >
       <h1 className='text-letter'>TINKER SPACE</h1>
     </div>
   );

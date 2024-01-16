@@ -2,5 +2,11 @@
     "scripts": {
         "start:backend": "cd backend && deno run --allow-net --allow-read --watch src/server.ts",
         "start:frontend": "cd frontend && npm run start:frontend"
-      }
+    },
+    "devDependencies": {
+        "gh-pages": "^6.0.0"
+    },
+    "dependencies": {
+        "lottie-web": "^5.12.2"
+    }
 }

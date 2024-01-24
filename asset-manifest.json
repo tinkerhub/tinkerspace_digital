@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/tinkerspace_digital/static/css/main.7cde93c8.css",
-    "main.js": "/tinkerspace_digital/static/js/main.1dda350f.js",
+    "main.css": "/tinkerspace_digital/static/css/main.acbdaed7.css",
+    "main.js": "/tinkerspace_digital/static/js/main.3cae5fbc.js",
     "static/media/ClashDisplay-Variable.ttf": "/tinkerspace_digital/static/media/ClashDisplay-Variable.e7f67b72cbf79f80c9c7.ttf",
     "static/media/slick.svg": "/tinkerspace_digital/static/media/slick.2630a3e3eab21c607e21.svg",
     "static/media/slick.eot": "/tinkerspace_digital/static/media/slick.a4e97f5a2a64f0ab1323.eot",
     "static/media/slick.ttf": "/tinkerspace_digital/static/media/slick.c94f7671dcc99dce43e2.ttf",
     "static/media/slick.woff": "/tinkerspace_digital/static/media/slick.295183786cd8a1389865.woff",
     "index.html": "/tinkerspace_digital/index.html",
-    "main.7cde93c8.css.map": "/tinkerspace_digital/static/css/main.7cde93c8.css.map",
-    "main.1dda350f.js.map": "/tinkerspace_digital/static/js/main.1dda350f.js.map"
+    "main.acbdaed7.css.map": "/tinkerspace_digital/static/css/main.acbdaed7.css.map",
+    "main.3cae5fbc.js.map": "/tinkerspace_digital/static/js/main.3cae5fbc.js.map"
   },
   "entrypoints": [
-    "static/css/main.7cde93c8.css",
-    "static/js/main.1dda350f.js"
+    "static/css/main.acbdaed7.css",
+    "static/js/main.3cae5fbc.js"
   ]
 }

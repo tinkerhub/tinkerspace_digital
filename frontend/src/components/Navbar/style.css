@@ -1,17 +1,14 @@
 
 
-.lottie_right {
+.lottie_plane {
     position: absolute;
-    margin-right: 9%;
+    margin-right: 140px;
+    margin-top: 50px;
 }
 
-.lottie_left {
-    position: absolute;
-    margin-right: 60px;
+/* .lottie_left { */
+    /* position: absolute; */
+    /* margin-left: 60px; */
     /* background-color: black; */
-    right: 0;
-}
-
-.parent_container {
-    position: relative; /* Ensure that the parent has a relative position */
-}
+    /* right: 0; */
+/* } */

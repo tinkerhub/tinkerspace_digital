@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect } from 'react';
 import './Cards.css'
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
@@ -10,7 +10,7 @@ function truncate(str, length) {
       return null;
   } else {
       if (str.length > length) {
-          const end = str.lastIndexOf(' ', 12);
+          const end = str.lastIndexOf(' ', 11);
           return end === -1 ? str.substring(0, length) : `${str.substring(0, end)}`;
       }
       return str;
@@ -20,14 +20,41 @@ function truncate(str, length) {
 // Main component
 function Cards(props) {
   const datas = props.data;
-  
-  // Filter mentors and mentees from the data
-  const mentors = datas.filter(data => data.fields['Are you a Mentor or Mentee?'] === 'Mentor');
 
-  const [mentees, setMentees] = useState([]);
-   useEffect(() => {
-    setMentees(datas.filter(data => data.fields['Are you a Mentor or Mentee?'] === 'Mentee'));
-    }, [datas]);
+
+
+// Remove duplicates based on membershipId
+const uniqueDatas = datas.reduce((acc, current) => {
+  const existingItem = acc.find(item => item.membershipId === current.membershipId);
+  if (!existingItem) {
+    acc.push(current);
+  }
+  return acc;
+}, []);
+
+console.log('Unique Datas:', uniqueDatas);
+
+
+// Filter mentors and mentees from uniqueDatas
+const mentors = uniqueDatas.filter(data => data.isMentor === true);
+const mentees = uniqueDatas.filter(data => data.isMentor === false);
+
+  // const mentors = datas.filter(data => data.isMentor === true);
+  
+  // const mentees = datas.filter(data => data.isMentor === false);
+  
+  // console.log('====================================');
+ 
+  //   console.log('Mentor :', mentees);
+
+  // console.log('====================================');
+
+  // console.log('====================================');
+  // mentees.forEach(mentees => {
+  //   console.log('Mentees Name:', mentees.name);
+  // });
+  // console.log('====================================');
+  
 
   // dividing cards for sliders
   let firstCardsNine = [];
@@ -48,31 +75,23 @@ function Cards(props) {
   const renderCardMentor = (data) => {
 
     // If the name is not present, return null
-    if (!data.fields['First name (from Your name)']) {
-      return null;
-    }
+    // if (!data.fields['name']) {
+    //   return null;
+    // }
 
-    let url;
-    if (
-      data.fields &&
-      data.fields["Enter your Photo (from Your name)"] &&
-      data.fields["Enter your Photo (from Your name)"].length > 0 &&
-      data.fields["Enter your Photo (from Your name)"][0].thumbnails &&
-      data.fields["Enter your Photo (from Your name)"][0].thumbnails.large
-    ) {
-      url = data.fields["Enter your Photo (from Your name)"][0].thumbnails.large.url;
-    }
+    // let data.fields['avatar'];
+   
     
     return (
       <div key={data.id}>
         <div className="w-[178px] h-auto p-1 rounded-[15px] bg-yellow-200 space-y-4" style={{background: 'linear-gradient(160.58deg, rgba(231, 231, 231, 0) 1.42%, #FFE297 98.11%)'}}>
           <div className="w-[170px] h-auto p-3 rounded-[12px] space-y-3" style={{background: 'linear-gradient(332.32deg, #FFCD4B 1.92%, #FFFFFF 83.83%)'}}>
             {/* <img className="w-[150px] h-[150px] object-cover rounded-[4px]" src={url ? url : "/images/alt.jpg"} alt="Profile" /> */}
-            <img className="w-[150px] h-[150px] object-cover rounded-[4px]" src={url ? url : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
-            <h2 className="w-[150px] h-[24px] text-[20px] font-bold">{truncate(data.fields['First name (from Your name)'][0], 11)}</h2>
+            <img className="w-[150px] h-[150px] object-cover rounded-[4px]" src={data.avatar ? data.avatar : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
+            <h2 className="w-[150px] h-[24px] text-[20px] font-bold">{truncate(data['name'], 11)}</h2>
             <hr className=' border-t-[2px]' style={{borderColor: '#876100'}} />
-            <p className="w-[150px] h-[22px] text-[18px]">{data.fields["Which domain you would like to give mentorship?"] ? truncate(data.fields["Which domain you would like to give mentorship?"],10) : 'Not Specified' }</p>
-            <p className="w-[150px] h-[22px] text-[18px]" style={{color: '#876100'}}>{data.fields["What will you be doing at the space today?"] ? truncate(data.fields["What will you be doing at the space today?"],19) : 'Not Specified'}</p>
+            {/* <p className="w-[150px] h-[22px] text-[18px]">{data.fields["Which domain you would like to give mentorship?"] ? truncate(data.fields["Which domain you would like to give mentorship?"],10) : 'Not Specified' }</p> */}
+            <p className="w-[150px] h-[22px] text-[18px]" style={{color: '#876100'}}>{data["purpose"] ? truncate(data["purpose"],19) : 'Not Specified'}</p>
           </div>
         </div>
       </div>
@@ -84,31 +103,31 @@ function Cards(props) {
 const renderCardMentee = (data) => {
 
   // If the name is not present, return null
-  if (!data.fields['First name (from Your name)']) {
-    return null;
-  }
+  // if (!data.fields['First name (from Your name)']) {
+  //   return null;
+  // }
 
-    let url;
-    if (
-      data.fields &&
-      data.fields["Enter your Photo (from Your name)"] &&
-      data.fields["Enter your Photo (from Your name)"].length > 0 &&
-      data.fields["Enter your Photo (from Your name)"][0].thumbnails &&
-      data.fields["Enter your Photo (from Your name)"][0].thumbnails.large
-    ) {
-      url = data.fields["Enter your Photo (from Your name)"][0].thumbnails.large.url;
-    }
+    // let url;
+    // if (
+    //   data.fields &&
+    //   data.fields["Enter your Photo (from Your name)"] &&
+    //   data.fields["Enter your Photo (from Your name)"].length > 0 &&
+    //   data.fields["Enter your Photo (from Your name)"][0].thumbnails &&
+    //   data.fields["Enter your Photo (from Your name)"][0].thumbnails.large
+    // ) {
+    //   url = data.fields["Enter your Photo (from Your name)"][0].thumbnails.large.url;
+    // }
 
     return (
         <div key={data.id}>
             <div className="w-[140px] h-[225.66px] ml-[13px] mb-12 rounded-[11.77px] border" style={{borderColor: '#AEAEAE',background: 'linear-gradient(160.58deg, rgba(231, 231, 231, 0) 1.42%, rgba(255, 226, 151, 0.2) 98.11%, rgba(255, 215, 75, 0.2) 98.11%)'}}>
                 <div className="w-[133.35px] h-[217.39px] p-2 rounded-[9.41px] space-y-3 " style={{background: 'linear-gradient(332.32deg, #F7F7F7 1.92%, #FFFFFF 83.83%)'}}>
                     {/* <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={url ? url : "/images/alt.jpg"} alt="Profile" /> */}
-                    <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={url ? url : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
-                    <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold">{truncate(data.fields['First name (from Your name)'][0], 11)}</h2>
+                    <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={data.avatar ? data.avatar : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
+                    <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold">{truncate(data['name'], 11)}</h2>
                     <hr className=' border-t-[1px]' style={{borderColor: '#876100'}} />
-                    <p className="w-[117.66px] h-[8px] text-[14.12px]">{data.fields["Enter the domain that you will be working on."] ? truncate(data.fields["Enter the domain that you will be working on."],10) : 'Not Specified' }</p>
-                    <p className="w-[117.66px] h-[17px] text-[14.12px]" style={{color: '#876100'}}>{data.fields["What will you be doing at the space today?"] ? truncate(data.fields["What will you be doing at the space today?"],19) : 'Not Specified'}</p>
+                    {/* <p className="w-[117.66px] h-[8px] text-[14.12px]">{data.fields["Enter the domain that you will be working on."] ? truncate(data.fields["Enter the domain that you will be working on."],10) : 'Not Specified' }</p> */}
+                    <p className="w-[117.66px] h-[17px] text-[14.12px]" style={{color: '#876100'}}>{data["purpose"] ? truncate(data["purpose"],19) : 'Not Specified'}</p>
                 </div>  
             </div>
         </div>

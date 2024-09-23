@@ -57,7 +57,7 @@ function Cards(props) {
   const datas = dummyData;
 
 
-  console.log('data to copy :',datas);
+  // console.log('data to copy :',datas);
   
 
 // Remove duplicates based on membershipId

@@ -1,7 +1,10 @@
 import React from 'react';
 import { CurrentDate, CurrentTime } from './CurrentDate';
 
-function Navbarr() {
+function Navbarr(props) {
+  let count = props.data;
+  count = count.length;
+  
   const commentText = '//'
   return (
     <div className='flex w-full h-[75px]'>
@@ -11,6 +14,8 @@ function Navbarr() {
         <p className='pl-4'><CurrentTime /></p>
         <span className='pl-2 pr-2 text-black'>{commentText}</span>
         <p className='pl-1'><CurrentDate /></p>
+        <span className='pl-2 pr-2 text-black'>{commentText}</span>
+        <p className='pl-2'> {count} Heroes</p>
       </div>
 
       <div className='w-1/3 min-h-fit flex flex-col items-end justify-center pt-[79px] pr-[125px]'>

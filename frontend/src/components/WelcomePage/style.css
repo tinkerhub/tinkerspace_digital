@@ -1,0 +1,36 @@
+/* style.css */
+
+.text-letter {
+    font-size: 9rem; /* Adjust font size accordingly */
+    font-weight: bold;
+    display: flex;
+  }
+  
+  .text-letter span {
+    display: inline-block;
+    animation: pop-up 0.5s ease forwards;
+    opacity: 0;
+  }
+  
+  @keyframes pop-up {
+    from {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pop-down {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+  }
+  

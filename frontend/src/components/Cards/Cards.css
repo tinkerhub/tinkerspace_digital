@@ -6,3 +6,27 @@
     width: 170px !important;
     
   }
+/* Container styling */
+.running-text-div {
+  position: relative; /* Creates a stacking context */
+  overflow: hidden; /* Hides the overflowing text */
+  white-space: nowrap; /* Prevents text wrapping */
+}
+
+/* Scrolling text styles */
+.running-text {
+  display: inline-block; /* Keeps text in one line for scrolling */
+  position: absolute; /* Allows positioning relative to the container */
+  z-index: 10; /* Brings it to the front */
+  animation: scrollText 5s linear infinite; /* Creates a scrolling effect */
+}
+
+/* Keyframes for scrolling animation */
+@keyframes scrollText {
+  0% {
+    transform: translateX(100%); /* Start from the right outside the container */
+  }
+  100% {
+    transform: translateX(-100%); /* End outside the left of the container */
+  }
+}

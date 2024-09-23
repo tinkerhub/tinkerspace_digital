@@ -2,29 +2,29 @@ import React, { useEffect, useState } from 'react';
 import Navbarr from './components/Navbar/Navbar';
 import Cards from './components/Cards/Cards';
 import './fonts/fonts.css';
+import WPage from './components/WelcomePage/WPage';
 
 function App() {
-    // Initialize state to hold fetched data
     const [data, setData] = useState([]);
+    const [showWPage, setShowWPage] = useState(true);
 
-    // Use useEffect to fetch data when the component mounts
     useEffect(() => {
         // Define async function to fetch records
         const fetchRecords = async () => {
             try {
-                // Fetch data from the server
-                const response = await fetch('http://localhost:8000/records');
-                
-                // Throw an error if the response is not ok
+                const response = await fetch('https://app-api.tinkerhub.org/checkin/active');
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 // Parse the response as JSON
                 const records = await response.json();
-                
-                // Update state with fetched records
-                setData(records.records);
+
+                // console.log('records :', records);
+
+                setData(records);
+
             } catch (error) {
                 // Log any errors to the console
                 console.error('Fetch failed:', error);
@@ -33,18 +33,39 @@ function App() {
 
         // Fetch records immediately
         fetchRecords();
-        
+
         // Fetch records every 20 seconds
         const interval = setInterval(fetchRecords, 20000);
-        
+
         // Clear interval when component unmounts
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        // console.log('Updated data in app:', data);
+    }, [data]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowWPage(false);
+        }, 6500); // Show <WPage /> for 30 seconds
+
+        return () => clearTimeout(timer);
+    }, []);
+
+
     return (
-        <div className='App' style={{ fontFamily: 'ClashDisplay' }}>
-            <Navbarr />
-            <Cards data={data} /> 
+       
+        <div className='tailwind-scope' style={{ fontFamily: 'ClashDisplay' }}>
+            {/* {showWPage ? (
+                <WPage />
+            ) : ( */}
+                <>
+                    <Navbarr data={data} />
+                    <Cards data={data} />
+                </>
+            {/* )} */}
+
         </div>
     );
 }

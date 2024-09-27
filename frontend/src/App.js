@@ -57,14 +57,14 @@ function App() {
     return (
        
         <div className='tailwind-scope' style={{ fontFamily: 'ClashDisplay' }}>
-            {showWPage ? (
+             {showWPage ? (
                 <WPage />
-            ) : (
+            ) : ( 
                 <>
                     <Navbarr data={data} />
                     <Cards data={data} />
                 </>
-            )}
+            )} 
 
         </div>
     );

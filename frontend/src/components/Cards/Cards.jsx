@@ -18,46 +18,48 @@ function truncate(str, length) {
 }
 
 // Function to generate random data
-// function generateDummyData(count) {
-//   const dummyData = [];
-//   const roles = ["Maker", "Mentor"];
-//   const purposes = ["Self Learning", "Working on a project", "Attending an event", ""];
-//   const workingOnOptions = ["React", "Flutter", "Django", "React Native", "Redux", "Pytorch", ""];
+function generateDummyData(count) {
+  const dummyData = [];
+  const roles = ["Maker", "Mentor"];
+  const purposes = ["Self Learning", "Working on a project", "Attending an event", ""];
+  const workingOnOptions = ["React", "Flutter", "Django", "React Native", "Redux", "Pytorch", ""];
 
-//   for (let i = 0; i < count; i++) {
-//     dummyData.push({
-//       id: i + 1,
-//       avatar: `https://fastly.picsum.photos/id/616/200/300.jpg?hmac=OPqWGCOp_eJVWmNlthIO-AKugNYYIBYh3Y7mO6MS_eg`,
-//       checkInTime: new Date().toISOString(),
-//       checkOutTime: new Date().toISOString(),
-//       createdAt: new Date().toISOString(),
-//       updatedAt: new Date().toISOString(),
-//       membershipId: i + 1,
-//       mid: i + 1,
-//       name: `User ${i + 1}`,
-//       purpose: purposes[Math.floor(Math.random() * purposes.length)],
-//       role: roles[Math.floor(Math.random() * roles.length)],
-//       roleId: Math.random() > 0.5 ? 4 : 3,
-//       workingOn: workingOnOptions[Math.floor(Math.random() * workingOnOptions.length)],
-//       isMentor: Math.random() > 0.5, // Randomly assign as mentor or not
-//     });
-//   }
+  for (let i = 0; i < count; i++) {
+    dummyData.push({
+      id: i + 1,
+      avatar: `https://fastly.picsum.photos/id/616/200/300.jpg?hmac=OPqWGCOp_eJVWmNlthIO-AKugNYYIBYh3Y7mO6MS_eg`,
+      checkInTime: new Date().toISOString(),
+      checkOutTime: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      membershipId: i + 1,
+      mid: i + 1,
+      name: `User ${i + 1}`,
+      purpose: purposes[Math.floor(Math.random() * purposes.length)],
+      role: roles[Math.floor(Math.random() * roles.length)],
+      roleId: Math.random() > 0.5 ? 4 : 3,
+      workingOn: workingOnOptions[Math.floor(Math.random() * workingOnOptions.length)],
+      isMentor: Math.random() > 0.5, // Randomly assign as mentor or not
+    });
+  }
 
-//   return dummyData;
-// }
+  return dummyData;
+}
 
 // Example usage to generate 100 dummy data entries
-// const dummyData = generateDummyData(44);
+const dummyData = generateDummyData(45);
 
 // Pass this dummyData as a prop to your Cards component
 
 // Main component
 function Cards(props) {
   const datas = props.data;
+  console.log(datas);
+  
   // const datas = dummyData;
 
 // Remove duplicates based on membershipId
-const uniqueDatas = datas.reduce((acc, current) => {
+const uniqueDatas = (datas || []).reduce((acc, current) => {
   const existingItem = acc.find(item => item.membershipId === current.membershipId);
   if (!existingItem) {
     acc.push(current);
@@ -65,12 +67,13 @@ const uniqueDatas = datas.reduce((acc, current) => {
   return acc;
 }, []);
 
-// console.log('Unique Datas:', uniqueDatas);
 
 
 // Filter mentors and mentees from uniqueDatas
 // const mentors = uniqueDatas.filter(data => data.isMentor === true);
-const mentees = uniqueDatas;
+  // const mentees = uniqueDatas;
+  const mentees = uniqueDatas;
+  
 
   // dividing cards for sliders
   let firstCardsNine = [];
@@ -85,6 +88,26 @@ const mentees = uniqueDatas;
   thirdCardsNine = mentees.slice(20, 30);
   existingCards = mentees.slice(30);
 
+  const teamMembers = [
+    'Reema Shaji',
+    'Johnson Regi',
+    'Arundhathi Krishna',
+    'Kurian Jacob',
+    'Mehar M P',
+
+  ];
+
+  const projectContributor = [
+    'Imad Ibrahim',
+    'Imad Ibrahim ',
+    
+  ];
+
+  const quard = [
+    'Chandran P K',
+
+  ];
+
 // Function to render mentee card
 const renderCardMentee = (data) => {
 
@@ -94,10 +117,27 @@ const renderCardMentee = (data) => {
                 <div className="w-[133.35px] h-[217.39px] p-2 rounded-[9.41px] space-y-3 " style={{background: 'linear-gradient(332.32deg, #F7F7F7 1.92%, #FFFFFF 83.83%)'}}>
                     {/* <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={url ? url : "/images/alt.jpg"} alt="Profile" /> */}
                     <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={data.avatar ? data.avatar : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
+            
+                    {/* <img className='w-8 absolute top-[98px]' src={process.env.PUBLIC_URL + '/images/Team-Member-Bronze.png'} alt='TinkerSpace' /> */}
+                    {/* Conditionally render the badge */}
+                    {teamMembers.includes(data['name']) && (
+                      <img className='w-8 absolute top-[98px]' src="https://ik.imagekit.io/dbq6giy6mr/Tinker%20Space%20Badge's%20/Team-Member-Bronze.png?updatedAt=1727358881914" alt='TinkerSpace' />
+                    )}
+                    {projectContributor.includes(data['name']) && (
+                      <img className='w-8 absolute top-[98px]' src="https://ik.imagekit.io/dbq6giy6mr/Tinker%20Space%20Badge's%20/Project-contributor.png?updatedAt=1727358881890" alt='TinkerSpace' />
+                    )}
+                    {projectContributor.includes(data['name']) && (
+                      <img className='w-8 absolute top-[98px]' src={process.env.PUBLIC_URL + '/images/maker.svg'} alt='TinkerSpace' />
+                    )}
+                    
+                    {/* src={process.env.PUBLIC_URL + '/images/TKS1.jpg'} */}
+                    {quard.includes(data['name']) && (
+                      <img className='w-8 absolute top-[98px] shine-effect' src="https://ik.imagekit.io/dbq6giy6mr/Tinker%20Space%20Badge's%20/quard.png?updatedAt=1727358881953" alt='TinkerSpace' />
+                    )}
                     <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold">{truncate(data['name'], 11)}</h2>
                     <hr className=' border-t-[1px]' style={{borderColor: '#876100'}} />
                     <p className="w-[117.66px] h-[8px] text-[14.12px]">{data["workingOn"] ? truncate(data["workingOn"],10) : 'Guest' }</p>
-                    <p className="w-[117.66px] h-[17px] text-[14.12px] " style={{color: '#876100'}}>{data["purpose"] ? truncate(data["purpose"],17) : 'Not Specified'}</p>
+            <p className="w-[117.66px] h-[17px] text-[14.12px] " style={{ color: '#876100' }}>{data["purpose"] ? truncate(data["purpose"], 17) : 'Not Specified'}</p>
                 </div>  
             </div>
         </div>
@@ -159,6 +199,10 @@ return (
           <Slider {...existingCardsSettings} className="mentees-slider" >
           {existingCards.map(renderCardMentee)}
         </Slider>
+
+                    {/* <img src={process.env.PUBLIC_URL + '/images/maker.svg'} alt="" />
+                    <img src={process.env.PUBLIC_URL + '/images/Team-Member-Bronze.png'} alt="" />
+                    <img src={process.env.PUBLIC_URL + '/images/Team-Member.webp'} alt="" /> */}
         
         
         </div>

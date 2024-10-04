@@ -2,9 +2,7 @@ import React from 'react';
 import { CurrentDate, CurrentTime } from './CurrentDate';
 
 function Navbarr(props) {
-  let count = props.data ? props.data.length : 0;
-  // count = count.length;
-  
+  const count = props.count;
   const commentText = '//'
   return (
     <div className='flex w-full h-[75px]'>

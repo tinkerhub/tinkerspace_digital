@@ -4,25 +4,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@headlessui/react": "^1.7.17",
-    "@heroicons/react": "^2.0.18",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "airtable": "^0.12.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "moment": "^2.29.4",
-    "nodemon": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-responsive-carousel": "^3.2.23",
     "react-scripts": "^5.0.1",
     "react-slick": "^0.29.0",
-    "slick-carousel": "^1.8.1",
-    "styled-components": "^6.0.8",
-    "web-vitals": "^2.1.4"
+    "slick-carousel": "^1.8.1"
   },
   "scripts": {
     "start:backend": "cd backend && deno run --allow-net --allow-read --watch src/server.ts",
@@ -52,9 +38,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "gh-pages": "^6.1.1",
-    "tailwindcss": "^3.3.3",
-    "ts-node": "^10.9.1"
+    "eslint-config-react-app": "^7.0.1",
+    "gh-pages": "^6.1.1"
   }
 }

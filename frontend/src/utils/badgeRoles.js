@@ -9,7 +9,6 @@ export const teamMembers = [
   
   export const projectContributor = [
     'Imad Ibrahim',
-    'Imad Ibrahim ',
     'User 2'
   ];
   

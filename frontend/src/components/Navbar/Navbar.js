@@ -1,6 +1,5 @@
 import React from 'react';
 import { CurrentDate, CurrentTime } from './CurrentDate';
-
 function Navbarr(props) {
   const count = props.count;
   const commentText = '//'
@@ -14,13 +13,14 @@ function Navbarr(props) {
         <p className='pl-1'><CurrentDate /></p>
         <span className='pl-2 pr-2 text-black'>{commentText}</span>
         <p className='pl-2'> {count} Makers</p>
-      </div>
+      </div>  
 
-      <div className='w-1/3 min-h-fit flex flex-col items-end justify-center pt-[79px] pr-[125px]'>
+      <div className='w-1/3 min-h-fit flex flex-col items-end justify-center pt-[79px] pr-[125px]'> 
         <img className='w-1/3' src={process.env.PUBLIC_URL + '/images/TKS1.jpg'} alt='TinkerSpace' />
         <img className='w-1/4' src={process.env.PUBLIC_URL + '/images/TKS2.jpg'} alt='TinkerHub' />
+
+        </div>
       </div>
-    </div>
   );
 }
 

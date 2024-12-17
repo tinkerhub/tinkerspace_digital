@@ -12,9 +12,11 @@ import { useEffect, useRef } from 'react';
 function Cards(props) {
 
   const datas = props.data;
+  console.log('data :',datas);
+  
 
   // for testing ..!
-  // const datas = generateDummyData(38);
+  // const datas = generateDummyData(41);
 
   // Dividing cards for sliders
   const { firstCardsNine, secondCardsNine, thirdCardsNine, existingCards } = divideCardsForSliders(datas);

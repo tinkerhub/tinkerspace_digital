@@ -16,8 +16,8 @@ function Navbarr(props) {
       </div>  
 
       <div className='w-1/3 min-h-fit flex flex-col items-end justify-center pt-[79px] pr-[125px]'> 
-        <img className='w-1/3' src={process.env.PUBLIC_URL + '/images/TKS1.jpg'} alt='TinkerSpace' />
-        <img className='w-1/4' src={process.env.PUBLIC_URL + '/images/TKS2.jpg'} alt='TinkerHub' />
+        <img className='w-1/3 rounded-tl-[2px] rounded-tr-[2px] rounded-bl-[2px]' src={process.env.PUBLIC_URL + '/images/TKS1.jpg'} alt='TinkerSpace' />
+        <img className='w-1/4 rounded-bl-[2px] rounded-br-[2px]' src={process.env.PUBLIC_URL + '/images/TKS2.jpg'} alt='TinkerHub' />
 
         </div>
       </div>

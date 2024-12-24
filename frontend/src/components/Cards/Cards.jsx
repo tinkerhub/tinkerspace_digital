@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 function Cards(props) {
 
   const datas = props.data;
-  console.log('data :',datas);
+  // console.log('data :',datas);
   
 
   // for testing ..!

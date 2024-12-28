@@ -38,7 +38,7 @@ function App() {
 
     return (
         <div className='tailwind-scope' style={{ fontFamily: 'ClashDisplay' }}>
-              {/* {showWPage ? <WPage /> : <> */}
+              {showWPage ? <WPage /> : <>
                 <Navbarr count={data.length} />
                 <Cards data={data} />
             
@@ -76,7 +76,7 @@ function App() {
                 autoplay 
             />
             
-            {/* </>} */}
+            </>}
         </div>
     );
 }

@@ -38,12 +38,12 @@ function App() {
 
     return (
         <div className='tailwind-scope' style={{ fontFamily: 'ClashDisplay' }}>
-              {showWPage ? <WPage /> : <>
+              {/* {showWPage ? <WPage /> : <> */}
                 <Navbarr count={data.length} />
                 <Cards data={data} />
             
              {/* Lottie animation */}
-
+{/* 
             <Lottie 
                 className="absolute z-10 "
                 style={{ width: '90px', right: '130px', bottom: '10px', }}
@@ -74,9 +74,9 @@ function App() {
                 animationData={animationData5} 
                 loop 
                 autoplay 
-            />
+            /> */}
             
-            </>}
+            {/* </>} */}
         </div>
     );
 }

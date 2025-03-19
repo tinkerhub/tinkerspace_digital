@@ -13,7 +13,7 @@ function Cards(props) {
 
   const datas = props.data;
   // console.log('data :',datas);
-  
+
 
   // for testing ..!
   // const datas = generateDummyData(41);
@@ -31,7 +31,7 @@ function Cards(props) {
   useEffect(() => {
     // If the length of existingCards is not 10,
     // set the armed flag so that when it returns to 10, we can reload.
-    if (existingCards.length !== 10) {
+    if (existingCards.length > 10) {
       armedRef.current = true;
     } else {
       // existingCards.length === 10

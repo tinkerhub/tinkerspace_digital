@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import NavBar from "./components/Navbar";
-import Cards from "./components/Cards/Cards";
+import Cards from "./components/Cards";
 
 import { useTimer } from "./utils/useTimer";
 import { fetchData } from "./utils/fetchData";

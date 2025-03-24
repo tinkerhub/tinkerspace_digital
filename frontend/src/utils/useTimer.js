@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 // Custom hook to manage timers
 export const useTimer = (duration, callback) => {

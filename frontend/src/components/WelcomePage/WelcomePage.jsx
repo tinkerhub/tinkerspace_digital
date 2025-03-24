@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import "./style.css";
 
-function WPage() {
+function WelcomePage() {
     useEffect(() => {
         const text = document.querySelector(".text-letter"); // Updated query selector
         const letters = text.textContent.split("");
@@ -62,4 +62,4 @@ function WPage() {
     );
 }
 
-export default WPage;
+export default WelcomePage;

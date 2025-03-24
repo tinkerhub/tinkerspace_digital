@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Navbarr from "./components/Navbar/Navbar";
+import NavBar from "./components/Navbar";
 import Cards from "./components/Cards/Cards";
 import "./fonts/fonts.css";
 import WPage from "./components/WelcomePage/WPage";
@@ -39,7 +39,7 @@ function App() {
     return (
         <div className="tailwind-scope" style={{ fontFamily: "ClashDisplay" }}>
             {/* {showWPage ? <WPage /> : <> */}
-            <Navbarr count={data.length} />
+            <NavBar count={data.length} />
             <Cards data={data} />
 
             {/* Lottie animation */}

@@ -1,6 +1,6 @@
 import React from "react";
 import { CurrentDate, CurrentTime } from "./CurrentDate";
-function Navbarr(props) {
+function NavBar(props) {
     const count = props.count;
     const commentText = "//";
     return (
@@ -38,4 +38,4 @@ function Navbarr(props) {
     );
 }
 
-export default Navbarr;
+export default NavBar;

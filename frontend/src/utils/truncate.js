@@ -5,9 +5,11 @@ export function truncate(str, length) {
         if (str.length > length) {
             const end = str.lastIndexOf(" ", 11);
             
-            return end === -1
-                ? str.substring(0, length)
-                : `${str.substring(0, end)}`;
+            if (end === -1) {
+                return str.substring(0, length);
+            } else {
+                return `${str.substring(0, end)}`;
+            }
         }
         return str;
     }

@@ -11,15 +11,14 @@ import { useEffect, useRef } from 'react';
 // Main component
 function Cards(props) {
 
-  const datas = props.data;
-  // console.log('data :',datas);
+  const data = props.data;
 
 
   // for testing ..!
-  // const datas = generateDummyData(41);
+  // const data = generateDummyData(41);
 
   // Dividing cards for sliders
-  const { firstCardsNine, secondCardsNine, thirdCardsNine, existingCards } = divideCardsForSliders(datas);
+  const { firstCardsNine, secondCardsNine, thirdCardsNine, existingCards } = divideCardsForSliders(data);
 
   // Slider settings
   const { firstCardsNineSettings, secondCardsNineSettings, thirdCardsNineSettings, existingCardsSettings } = getSliderSettings(firstCardsNine, secondCardsNine, thirdCardsNine, existingCards);

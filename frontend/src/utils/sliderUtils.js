@@ -1,8 +1,8 @@
-export function divideCardsForSliders(datas) {
-    const firstCardsNine = datas.slice(0, 10);
-    const secondCardsNine = datas.slice(10, 20);
-    const thirdCardsNine = datas.slice(20, 30);
-    const existingCards = datas.slice(30);
+export function divideCardsForSliders(data) {
+    const firstCardsNine = data.slice(0, 10);
+    const secondCardsNine = data.slice(10, 20);
+    const thirdCardsNine = data.slice(20, 30);
+    const existingCards = data.slice(30);
   
     return {
       firstCardsNine,

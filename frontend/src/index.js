@@ -77,7 +77,7 @@ const RootComponent = () => {
           overflow: 'hidden',
         }}
       >
-        {/* Background video */}
+        {/* Background video
         <video
           autoPlay
           loop
@@ -90,11 +90,27 @@ const RootComponent = () => {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            zIndex: -1,
+            zIndex: -2,
           }}
         >
           <source src={`${process.env.PUBLIC_URL}/videos/video3.mp4`} type="video/mp4" />
-        </video>
+        </video> */}
+
+        {/* Dotted grid overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: -1,
+            backgroundImage: 'radial-gradient(circle, #333 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+            backgroundColor: '#18181b',
+          }}
+        />
 
         {/* Main application */}
         <App />

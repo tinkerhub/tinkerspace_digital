@@ -63,8 +63,6 @@ export default function PaginatedCardGrid({ data }) {
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
-      backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-      backgroundSize: '20px 20px',
     }}>
       {/* Header */}
       <div style={{

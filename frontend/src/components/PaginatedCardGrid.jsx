@@ -188,7 +188,7 @@ export default function PaginatedCardGrid({ data }) {
     minute: '2-digit',
     hour12: true 
   });
-  const currentDate = new Date().toLocaleDateString('en-US', {
+  const currentDate = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
     month: '2-digit',
     year: '2-digit'

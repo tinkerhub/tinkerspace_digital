@@ -49,8 +49,8 @@ function Cards(props) {
 
     return (
       <div key={data.id}>
-        <div className="w-[140px] h-[225.66px] ml-[13px] mb-4 rounded-[11.77px] border" style={{ borderColor: '#AEAEAE', background: 'linear-gradient(160.58deg, rgba(231, 231, 231, 0) 1.42%, rgba(255, 226, 151, 0.2) 98.11%, rgba(255, 215, 75, 0.2) 98.11%)' }}>
-          <div className="w-[133.35px] h-[217.39px] p-2 rounded-[9.41px] space-y-3 " style={{ background: 'linear-gradient(332.32deg, #F7F7F7 1.92%, #FFFFFF 83.83%)' }}>
+        <div className="w-[140px] h-[225.66px] ml-[13px] mb-4 rounded-[11.77px] bg-[#23272f] shadow-sm">
+          <div className="w-[133.35px] h-[217.39px] p-2 rounded-[9.41px] space-y-3 bg-[#23272f]">
             <img className="w-[117.66px] h-[117.66px] object-cover rounded-[4px]" src={data.avatar ? data.avatar : `${process.env.PUBLIC_URL}/images/alt.jpg`} alt="Profile" />
 
             {/* Conditionally render the badge */}
@@ -60,16 +60,12 @@ function Cards(props) {
             {projectContributor.includes(data['name']) && (
               <img className='w-8 absolute top-[98px]' src="https://ik.imagekit.io/dbq6giy6mr/Tinker%20Space%20Badge's%20/Project-contributor.png?updatedAt=1727358881890" alt='projectContributor' />
             )}
-            {/* {projectContributor.includes(data['name']) && (
-                      <img className='w-8 absolute top-[98px]' src={process.env.PUBLIC_URL + '/images/maker.svg'} alt='TinkerSpace' />
-                    )} */}
             {guard.includes(data['name']) && (
-              <img className='w-8 absolute top-[98px]' src="https://ik.imagekit.io/dbq6giy6mr/Tinker%20Space%20Badge's%20/quard.png?updatedAt=1727358881953" alt='TinkerSpace' />
+              <img className='w-8 absolute top-[98px]' src="https://ik.imagekit.io/dbq6giy6mr/Tinker%20Space%20Badge's%20/quad.png?updatedAt=1727358881953" alt='TinkerSpace' />
             )}
-            <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold">{truncate(data['name'], 11)}</h2>
-            <hr className=' border-t-[1px]' style={{ borderColor: '#876100' }} />
-            <p className="w-[117.66px] h-[8px] text-[14.12px]">{data["workingOn"] ? truncate(data["workingOn"], 10) : 'Guest'}</p>
-            <p className="w-[117.66px] h-[17px] text-[14.12px] " style={{ color: '#876100' }}>{data["purpose"] ? truncate(data["purpose"], 17) : 'Not Specified'}</p>
+            <h2 className="w-[117.66px] h-[13px] text-[15.69px] font-bold text-white">{truncate(data['name'], 11)}</h2>
+            <p className="w-[117.66px] h-[8px] text-[14.12px] text-white">{data["workingOn"] ? truncate(data["workingOn"], 10) : 'Guest'}</p>
+            <p className="w-[117.66px] h-[17px] text-[14.12px] text-[#a1a1aa]">{data["purpose"] ? truncate(data["purpose"], 17) : 'Not Specified'}</p>
           </div>
         </div>
       </div>

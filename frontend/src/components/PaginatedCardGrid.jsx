@@ -237,8 +237,8 @@ const content = `${space}${currentTime}${space}•${space}${currentDate}${space}
             @keyframes nameScroll {
               0% { transform: translateX(0); }
               10% { transform: translateX(0); }
-              60% { transform: translateX(calc(-100% + 200px)); }
-              70% { transform: translateX(calc(-100% + 200px)); }
+              60% { transform: translateX(calc(-30%)); }
+              70% { transform: translateX(calc(-30%)); }
               100% { transform: translateX(0); }
             }
           `}

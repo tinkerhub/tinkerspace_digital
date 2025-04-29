@@ -151,7 +151,7 @@ export default function PaginatedCardGrid({ data }) {
                 color: '#999',
                 lineHeight: '1.4'
               }}>
-                {card.subtitle || card.workingOn || ''}
+                {card.purpose}
               </div>
               <div style={{
                 fontSize: '14px',
@@ -159,7 +159,7 @@ export default function PaginatedCardGrid({ data }) {
                 lineHeight: '1.4',
                 marginTop: 'auto'
               }}>
-                {card.company || card.purpose || 'Self Learning'}
+                {card.workingOn}
               </div>
             </div>
           </div>

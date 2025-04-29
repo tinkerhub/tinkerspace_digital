@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { teamMembers, projectContributor, guard } from '../utils/badgeRoles';
 
 function useGridLayout(cardWidth, cardHeight, gap) {
   const [layout, setLayout] = useState({ cols: 5, rows: 3 });
@@ -18,7 +19,7 @@ function useGridLayout(cardWidth, cardHeight, gap) {
 const CARD_WIDTH = 220;
 const CARD_HEIGHT = 280;
 const GAP = 20;
-const PAGE_INTERVAL = 5000;
+const PAGE_INTERVAL = 10000;
 
 export default function PaginatedCardGrid({ data }) {
   const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
@@ -59,11 +60,12 @@ export default function PaginatedCardGrid({ data }) {
       width: '100vw',
       height: '100vh',
       overflow: 'hidden',
-      //background: '#1a1a1a',
+      background: '#1a1a1a',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
-      zIndex: 1
+      backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+      backgroundSize: '20px 20px',
     }}>
       {/* Header */}
       <div style={{
@@ -101,7 +103,7 @@ export default function PaginatedCardGrid({ data }) {
         gap: `${GAP}px`,
         justifyContent: 'center',
         alignContent: 'start',
-        padding: '20px 40px',
+        padding: '24px',
         flex: 1,
       }}>
         {pageCards.map((card, i) => (
@@ -114,15 +116,17 @@ export default function PaginatedCardGrid({ data }) {
               flexDirection: 'column',
               overflow: 'hidden',
               height: `${CARD_HEIGHT}px`,
+              position: 'relative',
             }}
           >
             <div style={{
               width: '100%',
               height: '200px',
               overflow: 'hidden',
+              position: 'relative',
             }}>
               <img
-                src={card.avatar || 'https://www.gravatar.com/avatar/?d=mp&f=y'}
+                src={card.avatar || `${process.env.PUBLIC_URL}/images/alt.jpg`}
                 alt={card.name}
                 style={{
                   width: '100%',
@@ -130,7 +134,53 @@ export default function PaginatedCardGrid({ data }) {
                   objectFit: 'cover',
                 }}
               />
+              
+              {/* Badge Container */}
+              
             </div>
+            <div style={{
+                position: 'absolute',
+                top: '200px',
+                right: '4px',
+                width: '56px',
+                height: '56px',
+                transform: 'translateY(-50%)',
+                zIndex: 2,
+              }}>
+                {teamMembers.includes(card.name) && (
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/images/Team-Member-Bronze.png`}
+                    alt="Team Member"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                )}
+                {projectContributor.includes(card.name) && (
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/images/Project-contributor.png`}
+                    alt="Project Contributor"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                )}
+                {guard.includes(card.name) && (
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/images/quard.png`}
+                    alt="Guard"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                )}
+              </div>
             <div style={{ 
               padding: '16px',
               display: 'flex',

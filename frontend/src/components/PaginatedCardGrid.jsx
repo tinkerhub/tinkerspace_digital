@@ -60,7 +60,6 @@ export default function PaginatedCardGrid({ data }) {
       width: '100vw',
       height: '100vh',
       overflow: 'hidden',
-      background: '#1a1a1a',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',

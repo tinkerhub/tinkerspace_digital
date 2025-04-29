@@ -18,7 +18,7 @@ function useGridLayout(cardWidth, cardHeight, gap) {
 }
 
 const CARD_WIDTH = 210;
-const CARD_HEIGHT = 280;
+const CARD_HEIGHT = 260;
 const GAP = 20;
 const PAGE_INTERVAL = 10000;
 

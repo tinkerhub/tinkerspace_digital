@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { USER_BADGES, BADGE_METADATA } from '../../utils/constants/badgeConfig';
 
-// Updated purpose color mapping with pastel colors
+// Color mapping for different user purposes with pastel colors
 const PURPOSE_COLORS = {
   'Attending an event': '#FFB3B3',    // Pastel red
   'Visiting': '#B3FFB3',              // Pastel green
@@ -22,6 +22,7 @@ export default function CardItem({ card, CARD_HEIGHT }) {
   }, [card.name]);
 
   return (
+    // Main card container with dynamic height and purpose-based styling
     <div
       style={{
         background: '#242424',
@@ -35,7 +36,12 @@ export default function CardItem({ card, CARD_HEIGHT }) {
         boxShadow: `inset 0 0 20px rgba(${getPurposeRGBA(card.purpose)}, 0.1)` // Subtle glow effect
       }}
     >
-      <CardImage src={card.avatar} alt={card.name} />
+      <CardImage 
+        src={card.avatar} 
+        alt={card.name} 
+        purpose={card.purpose}
+        purposeColor={PURPOSE_COLORS[card.purpose] || PURPOSE_COLORS.default}
+      />
       <BadgeContainer name={card.name} />
       <CardContent 
         card={card} 
@@ -57,20 +63,45 @@ function getPurposeRGBA(purpose) {
   return `${r}, ${g}, ${b}`;
 }
 
-function CardImage({ src, alt }) {
+function CardImage({ src, alt, purpose, purposeColor }) {
   return (
+    // Image container with fixed height and relative positioning
     <div style={{
       width: '100%',
-      height: '180px',
+      height: '190px',
       overflow: 'hidden',
       position: 'relative',
     }}>
+      <div style={{
+        position: 'absolute',
+        bottom: '8px',
+        left: '8px',
+        background: purposeColor,
+        padding: '6px 8px',  // Reduced and made consistent padding
+        borderRadius: '4px',
+        zIndex: 1,
+        opacity: 0.9,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+      }}>
+        <span style={{
+          color: '#242424',
+          fontSize: '10px',
+          fontWeight: '600',
+          letterSpacing: '0.3px',
+          textTransform: 'uppercase',
+          lineHeight: '1',  // Added to ensure vertical centering
+          display: 'block'  // Added to ensure consistent block layout
+        }}>
+          {purpose}
+        </span>
+      </div>
+      {/* User avatar image */}
       <img
         src={src}
         alt={alt}
         style={{
           width: '100%',
-          height: '180px',
+          height: '190px',
           objectFit: 'cover',
         }}
       />
@@ -82,9 +113,10 @@ function BadgeContainer({ name }) {
   const userBadges = USER_BADGES[name] || [];
   
   return (
+    // Badge container positioned over the avatar image
     <div style={{
       position: 'absolute',
-      top: '180px',
+      top: '170px',
       right: '4px',
       width: '56px',
       height: '56px',
@@ -109,6 +141,7 @@ function BadgeContainer({ name }) {
 
 function Badge({ type, alt }) {
   return (
+    // Individual badge image
     <img 
       src={`${process.env.PUBLIC_URL}/images/${type}.png`}
       alt={alt}
@@ -123,6 +156,7 @@ function Badge({ type, alt }) {
 
 function CardContent({ card, textRef, containerRef, isOverflowing, purposeColor }) {
   return (
+    // Content container for user information
     <div style={{ 
       padding: '16px',
       display: 'flex',
@@ -139,33 +173,39 @@ function CardContent({ card, textRef, containerRef, isOverflowing, purposeColor 
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         marginBottom: '4px',
+        height: '24px',
       }}>
-        <div ref={containerRef} style={{ overflow: 'hidden' }}>
+        <div ref={containerRef} style={{ 
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
           <div
             ref={textRef}
             style={{
               whiteSpace: 'nowrap',
               display: 'inline-block',
-              animation: isOverflowing ? 'nameScroll 10s ease-in-out infinite' : 'none',
+              animation: isOverflowing ? 'nameScroll 8s ease-in-out infinite alternate' : 'none',
+              paddingRight: isOverflowing ? '20px' : '0',
             }}
           >
             {card.name}
           </div>
+          <style>
+            {/* Animation keyframes for name scrolling */}
+            {`
+              @keyframes nameScroll {
+                0% {
+                  transform: translateX(0);
+                }
+                100% {
+                  transform: translateX(calc(-100% + ${containerRef.current?.clientWidth || 0}px));
+                }
+              }
+            `}
+          </style>
         </div>
       </div>
-      <div style={{
-        fontSize: '14px',
-        color: purposeColor,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        lineHeight: '1.2',
-        fontWeight: '600',
-        opacity: 0.9, // Slightly reduced opacity for better pastel effect
-        textShadow: '0 0 10px rgba(0,0,0,0.1)' // Subtle text shadow
-      }}>
-        {card.purpose}
-      </div>
+      {/* Working on text with ellipsis overflow */}
       <div style={{
         fontSize: '14px',
         color: '#666',
@@ -174,7 +214,7 @@ function CardContent({ card, textRef, containerRef, isOverflowing, purposeColor 
         textOverflow: 'ellipsis',
         lineHeight: '1',
       }}>
-        {card.workingOn}
+        {card.workingOn || '\u00A0'}
       </div>
     </div>
   );

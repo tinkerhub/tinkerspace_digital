@@ -4,6 +4,7 @@ import { USER_BADGES, BADGE_METADATA } from '../../utils/constants/badgeConfig';
 // Color mapping for different user purposes with pastel colors
 const PURPOSE_COLORS = {
   'Attending an event': '#FFB3B3',    // Pastel red
+  'On duty': '#FFB3B3',    // Pastel red
   'Visiting': '#B3FFB3',              // Pastel green
   'Working on a project': '#B3D9FF',  // Pastel blue
   'Self Learning': '#FFE0B3',         // Pastel orange
@@ -14,6 +15,10 @@ export default function CardItem({ card, CARD_HEIGHT }) {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef(null);
   const containerRef = useRef(null);
+
+  const userBadges = USER_BADGES[card.name] || [];
+  const hasSecurityBadge = userBadges.includes('guard');
+  const displayPurpose = hasSecurityBadge ? 'On duty' : card.purpose;
 
   useEffect(() => {
     if (textRef.current && containerRef.current) {
@@ -32,23 +37,21 @@ export default function CardItem({ card, CARD_HEIGHT }) {
         overflow: 'hidden',
         height: `${CARD_HEIGHT}px`,
         position: 'relative',
-        borderLeft: `4px solid ${PURPOSE_COLORS[card.purpose] || PURPOSE_COLORS.default}`,
-        boxShadow: `inset 0 0 20px rgba(${getPurposeRGBA(card.purpose)}, 0.1)` // Subtle glow effect
       }}
     >
       <CardImage 
         src={card.avatar} 
         alt={card.name} 
-        purpose={card.purpose}
-        purposeColor={PURPOSE_COLORS[card.purpose] || PURPOSE_COLORS.default}
+        purpose={displayPurpose}
+        purposeColor={PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS.default}
       />
       <BadgeContainer name={card.name} />
       <CardContent 
-        card={card} 
+        card={{...card, purpose: displayPurpose}}
         textRef={textRef} 
         containerRef={containerRef} 
         isOverflowing={isOverflowing}
-        purposeColor={PURPOSE_COLORS[card.purpose] || PURPOSE_COLORS.default}
+        purposeColor={PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS.default}
       />
     </div>
   );
@@ -111,7 +114,6 @@ function CardImage({ src, alt, purpose, purposeColor }) {
 
 function BadgeContainer({ name }) {
   const userBadges = USER_BADGES[name] || [];
-  
   return (
     // Badge container positioned over the avatar image
     <div style={{
@@ -209,6 +211,8 @@ function CardContent({ card, textRef, containerRef, isOverflowing, purposeColor 
       <div style={{
         fontSize: '14px',
         color: '#666',
+        fontWeight: '600',
+        letterSpacing: '0.3px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',

@@ -1,7 +1,7 @@
 export const BADGE_TYPES = {
   TEAM_MEMBER: 'Team-Member-Bronze',
   PROJECT_CONTRIBUTOR: 'Project-contributor',
-  GUARD: 'quard'
+  GUARD: 'guard'
 };
 
 export const USER_BADGES = {

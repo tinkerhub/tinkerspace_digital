@@ -19,7 +19,7 @@ const EmojiBackground = () => {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, 120px)',
       overflow: 'hidden',
-      opacity: 0.35,
+      opacity: 0.25,
     }}>
       {Array(208).fill(null).map((_, index) => (
         <div

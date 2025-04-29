@@ -2,11 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { teamMembers, projectContributor, guard } from '../utils/badgeRoles';
 
 function useGridLayout(cardWidth, cardHeight, gap) {
-  const [layout, setLayout] = useState({ cols: 5, rows: 3 });
+  const [layout, setLayout] = useState({ cols: 7, rows: 3 });
 
   useEffect(() => {
     function updateLayout() {
-      setLayout({ cols: 5, rows: 3 });
+      setLayout({ cols: 7, rows: 3 });
     }
     updateLayout();
     window.addEventListener('resize', updateLayout);
@@ -129,6 +129,7 @@ export default function PaginatedCardGrid({ data }) {
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
+                  //filter: 'grayscale(0.7)',
                 }}
               />
               

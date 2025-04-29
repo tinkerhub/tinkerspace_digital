@@ -5,36 +5,31 @@ const EmojiBackground = () => {
   const emojis = [
     '💻', '📱', '⌨️', '🖥️', '🔌', '🖨️', '💾', '💿', 
     '📀', '🎮', '🕹️', '🎯', '📡', '📱', '🤖', '⚡️',
-    '🔋', '🌐', '📶', '🛜', '💡', '⚙️', '🔧', '🔨',
-    '🛠️', '⚡️', '📊', '📈', '🔍', '🔎', '🔐', '🔑'
+    '🔋', '💡', '🔧', '🔨',
+    '🛠️', '⚡️', '🔍',
   ];
 
   return (
     <div style={{
       position: 'fixed',
-      top: 0,
-      left: 0,
       width: '100vw',
       height: '100vh',
       background: '#1a1a1a',
       zIndex: 0,
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, 80px)',
-      gap: '40px',
-      padding: '40px',
+      gridTemplateColumns: 'repeat(auto-fill, 120px)',
       overflow: 'hidden',
-      opacity: 0.2,
+      opacity: 0.35,
     }}>
-      {Array(200).fill(null).map((_, index) => (
+      {Array(208).fill(null).map((_, index) => (
         <div
           key={index}
           style={{
-            fontSize: '32px',
+            fontSize: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: `float${index % 3} 10s infinite ease-in-out`,
-            filter: 'grayscale(0.5)',
+            animation: `float${index % 3} 8s infinite ease-in-out`,
           }}
         >
           <style>

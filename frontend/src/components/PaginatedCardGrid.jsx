@@ -114,12 +114,44 @@ export default function PaginatedCardGrid({ data }) {
               flexDirection: 'column',
               overflow: 'hidden',
               height: `${CARD_HEIGHT}px`,
+              position: 'relative',
             }}
           >
+            {/* Purpose Badge */}
+            <div style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              zIndex: 2,
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap',
+            }}>
+              {(card.subtitle || card.purpose) && (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  color: '#fff',
+                  fontWeight: '500',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  {card.purpose}
+                </div>
+              )}
+            </div>
+
+            {/* Image Container */}
             <div style={{
               width: '100%',
               height: '200px',
               overflow: 'hidden',
+              backgroundColor: '#1a1a1a',
+              position: 'relative',
             }}>
               <img
                 src={card.avatar || 'https://www.gravatar.com/avatar/?d=mp&f=y'}
@@ -130,7 +162,18 @@ export default function PaginatedCardGrid({ data }) {
                   objectFit: 'cover',
                 }}
               />
+              {/* Gradient Overlay */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '100px',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%)',
+              }} />
             </div>
+
+            {/* Text Content */}
             <div style={{ 
               padding: '16px',
               display: 'flex',
@@ -139,27 +182,20 @@ export default function PaginatedCardGrid({ data }) {
               flex: 1,
             }}>
               <div style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 fontWeight: '600',
                 color: '#fff',
-                lineHeight: '1.2'
+                lineHeight: '1.3',
+                marginBottom: '4px',
               }}>
                 {card.name}
               </div>
               <div style={{
                 fontSize: '14px',
-                color: '#999',
-                lineHeight: '1.4'
-              }}>
-                {card.subtitle || card.workingOn || ''}
-              </div>
-              <div style={{
-                fontSize: '14px',
                 color: '#666',
                 lineHeight: '1.4',
-                marginTop: 'auto'
               }}>
-                {card.company || card.purpose || 'Self Learning'}
+                {card.workingOn}
               </div>
             </div>
           </div>

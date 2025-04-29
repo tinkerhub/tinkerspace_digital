@@ -194,7 +194,9 @@ export default function PaginatedCardGrid({ data }) {
     year: '2-digit'
   }).replace(/\//g, '/');
 
-  const content = `${currentTime} • ${currentDate} • ${data.length} Makers • `;
+const space = '\u00A0\u00A0\u00A0\u00A0\u00A0'; // 5 non-breaking spaces
+const content = `${space}${currentTime}${space}•${space}${currentDate}${space}•${space}${data.length} Makers${space}•`;
+
 
   return (
     <div style={{

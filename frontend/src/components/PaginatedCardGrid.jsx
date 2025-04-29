@@ -85,10 +85,10 @@ export default function PaginatedCardGrid({ data }) {
           <span style={{ color: '#666' }}>{currentTime} // {currentDate} // {data.length} Makers</span>
         </div>
         <img 
-          src="https://tinkerhub.org/static/media/TinkerHub%20Primary%20Logo.d3a7c5f6.svg" 
+          src={process.env.PUBLIC_URL + '/images/SpaceLogo.png'}
           alt="TinkerHub"
           style={{
-            height: '30px',
+            height: '48px',
           }}
         />
       </div>

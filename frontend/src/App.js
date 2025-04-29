@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './fonts/fonts.css';
 import { fetchData } from './utils/fetchData';
 import { removeDuplicates } from './utils/removeDuplicates';
 import PaginatedCardGrid from './components/PaginatedCardGrid';
@@ -29,7 +28,7 @@ function App() {
             width: '100vw',
             height: '100vh',
             overflow: 'hidden',
-            fontFamily: 'ClashDisplay'
+            fontFamily: 'Geist'
         }}>
             <EmojiBackground />
             <PaginatedCardGrid data={data} />

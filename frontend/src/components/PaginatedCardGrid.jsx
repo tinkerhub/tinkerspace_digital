@@ -256,6 +256,7 @@ const content = `${space}${currentTime}${space}•${space}${currentDate}${space}
             fontWeight: '700',
             letterSpacing: '2px',
             animation: 'glow 2s ease-in-out infinite',
+            fontFamily: 'Geist'
           }}>
             LiveFeed
           </div>
@@ -267,7 +268,7 @@ const content = `${space}${currentTime}${space}•${space}${currentDate}${space}
             position: 'relative',
           }}>
             <div style={{
-              display: 'inline-flex',  // flex not block
+              display: 'inline-flex',
               animation: 'marquee 80s linear infinite',
             }}>
               <div style={{
@@ -275,6 +276,7 @@ const content = `${space}${currentTime}${space}•${space}${currentDate}${space}
                 fontSize: '24px',
                 color: '#93B7BE',
                 fontWeight: '500',
+                fontFamily: 'Geist'
               }}>
                 {content.repeat(10)}
               </div>
@@ -283,6 +285,7 @@ const content = `${space}${currentTime}${space}•${space}${currentDate}${space}
                 fontSize: '24px',
                 color: '#93B7BE',
                 fontWeight: '500',
+                fontFamily: 'Geist'
               }}>
                 {content.repeat(10)}
               </div>

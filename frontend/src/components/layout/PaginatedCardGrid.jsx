@@ -76,7 +76,7 @@ export default function PaginatedCardGrid({ data }) {
         gap: `${GAP}px`,
         justifyContent: 'center',
         alignContent: 'start',
-        padding: '24px',
+        padding: '48px',
         flex: 1,
       }}>
         {pageCards.map((card, i) => (

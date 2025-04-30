@@ -54,6 +54,16 @@ export default function Header({ content }) {
 
   const totalMakers = content.split('•')[2].trim().split(' ')[0];
 
+  const statusItemStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  };
+
+  const iconStyle = {
+    fontSize: '18px'
+  };
+
   return (
     <div style={{
       width: '100%',
@@ -67,6 +77,7 @@ export default function Header({ content }) {
       borderBottom: '1px solid rgba(60, 60, 60, 0.6)',
       color: '#ffffff',
       fontSize: '18px',
+      fontWeight: 700,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       position: 'sticky',
       top: 0,
@@ -98,24 +109,24 @@ export default function Header({ content }) {
         alignItems: 'center',
         gap: '40px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span role="img" aria-label="users" style={{ fontSize: '18px' }}>👥</span>
+        <div style={statusItemStyle}>
+          <span role="img" aria-label="users" style={iconStyle}>👨‍💻</span>
           <span>{totalMakers} Makers</span>
         </div>
         {weather && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span role="img" aria-label="weather" style={{ fontSize: '18px' }}>
+          <div style={statusItemStyle}>
+            <span role="img" aria-label="weather" style={iconStyle}>
               {getWeatherIcon(weather.description)}
             </span>
             <span>{weather.temperature}°C</span>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span role="img" aria-label="calendar" style={{ fontSize: '18px' }}>📅</span>
+        <div style={statusItemStyle}>
+          <span role="img" aria-label="calendar" style={iconStyle}>📅</span>
           <span>{formatDate(currentTime)}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span role="img" aria-label="clock" style={{ fontSize: '18px' }}>🕐</span>
+        <div style={statusItemStyle}>
+          <span role="img" aria-label="clock" style={iconStyle}>🕐</span>
           <span>{formatTime(currentTime)}</span>
         </div>
       </div>

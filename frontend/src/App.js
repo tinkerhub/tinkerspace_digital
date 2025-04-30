@@ -8,6 +8,17 @@ function App() {
     const [data, setData] = useState([]);
 
     useEffect(() => {
+        // Keep screen awake
+        const wakeLock = async () => {
+            try {
+                await document.documentElement.requestFullscreen();
+                await navigator.wakeLock.request('screen');
+            } catch (err) {
+                console.log('Wake Lock error:', err);
+            }
+        };
+        wakeLock();
+
         const fetchRecords = async () => {
             try {
                 const records = await fetchData(); 

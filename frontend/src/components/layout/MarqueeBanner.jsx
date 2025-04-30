@@ -16,11 +16,11 @@ export default function MarqueeBanner({ content }) {
           <div key={index} style={{
             display: 'inline-flex',
             fontSize: '24px',
-            color: '#93B7BE',
+            color: '#B3D9FF',
             fontWeight: '900',
             fontFamily: 'Geist'
           }}>
-            {content.repeat(10)}
+            {content.repeat(5)}
           </div>
         ))}
       </div>

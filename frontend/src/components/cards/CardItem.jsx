@@ -80,19 +80,19 @@ function CardImage({ src, alt, purpose, purposeColor }) {
         bottom: '8px',
         left: '8px',
         background: purposeColor,
-        padding: '6px 8px',  // Reduced and made consistent padding
+        padding: '8px 8px 4px 8px',  // Reduced and made consistent padding
         borderRadius: '4px',
         zIndex: 1,
         opacity: 0.9,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
         <span style={{
           color: '#242424',
           fontSize: '10px',
           fontWeight: '600',
-          letterSpacing: '0.3px',
+          letterSpacing: '0.2px',
           textTransform: 'uppercase',
-          lineHeight: '1',  // Added to ensure vertical centering
+          lineHeight: '0.8',  // Added to ensure vertical centering
           display: 'block'  // Added to ensure consistent block layout
         }}>
           {purpose}

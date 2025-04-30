@@ -68,7 +68,7 @@ export default function Header({ content }) {
     <div style={{
       width: '100%',
       padding: '24px 48px',
-      height: '64px',
+      height: '80px',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -77,11 +77,11 @@ export default function Header({ content }) {
       borderBottom: '1px solid rgba(60, 60, 60, 0.6)',
       color: '#ffffff',
       fontSize: '18px',
+      fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontWeight: 700,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       position: 'sticky',
       top: 0,
-      zIndex: 1000,
+      zIndex: 1,
     }}>
       <div style={{ 
         display: 'flex',

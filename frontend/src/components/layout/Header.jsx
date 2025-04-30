@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentWeather } from '../../utils/api/weatherService';
+import RainAnimation from '../../styles/RainAnimation';
 
 export default function Header({ content }) {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -82,7 +83,9 @@ export default function Header({ content }) {
       position: 'sticky',
       top: 0,
       zIndex: 1,
+      overflow: 'hidden'  // Add this to contain the rain animation
     }}>
+      <RainAnimation />
       <div style={{ 
         display: 'flex',
         alignItems: 'center',

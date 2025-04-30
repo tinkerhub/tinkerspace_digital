@@ -34,7 +34,7 @@ export async function getCurrentWeather() {
     //   "current": {
     //     "time": "2025-04-29T21:45",
     //     "interval": 900,
-    //     "temperature_2m": 27.2,
+    //     "temperature_2m": 16.2,
     //     "precipitation": 120,
     //     "weather_code": 65
     //   }

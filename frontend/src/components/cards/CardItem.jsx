@@ -13,6 +13,7 @@ const PURPOSE_COLORS = {
 
 export default function CardItem({ card, CARD_HEIGHT }) {
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const [scrollAmount, setScrollAmount] = useState(0);
   const textRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -22,7 +23,11 @@ export default function CardItem({ card, CARD_HEIGHT }) {
 
   useEffect(() => {
     if (textRef.current && containerRef.current) {
-      setIsOverflowing(textRef.current.scrollWidth > containerRef.current.clientWidth);
+      const textWidth = textRef.current.scrollWidth;
+      const containerWidth = containerRef.current.clientWidth;
+      const overflow = textWidth - containerWidth;
+      setIsOverflowing(overflow > 1);
+      setScrollAmount(overflow > 0 ? overflow : 0);
     }
   }, [card.name]);
 
@@ -51,20 +56,13 @@ export default function CardItem({ card, CARD_HEIGHT }) {
         textRef={textRef} 
         containerRef={containerRef} 
         isOverflowing={isOverflowing}
+        scrollAmount={scrollAmount}
         purposeColor={PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS.default}
       />
     </div>
   );
 }
 
-// Helper function to convert hex to RGBA
-function getPurposeRGBA(purpose) {
-  const hex = PURPOSE_COLORS[purpose] || PURPOSE_COLORS.default;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `${r}, ${g}, ${b}`;
-}
 
 function CardImage({ src, alt, purpose, purposeColor }) {
   return (
@@ -156,7 +154,7 @@ function Badge({ type, alt }) {
   );
 }
 
-function CardContent({ card, textRef, containerRef, isOverflowing, purposeColor }) {
+function CardContent({ card, textRef, containerRef, isOverflowing, scrollAmount}) {
   return (
     // Content container for user information
     <div style={{ 
@@ -186,25 +184,12 @@ function CardContent({ card, textRef, containerRef, isOverflowing, purposeColor 
             style={{
               whiteSpace: 'nowrap',
               display: 'inline-block',
-              animation: isOverflowing ? 'nameScroll 8s ease-in-out infinite alternate' : 'none',
+              animation: isOverflowing ? 'nameScroll 10s ease-in-out infinite alternate' : 'none',
               paddingRight: isOverflowing ? '20px' : '0',
             }}
           >
             {card.name}
           </div>
-          <style>
-            {/* Animation keyframes for name scrolling */}
-            {`
-              @keyframes nameScroll {
-                0% {
-                  transform: translateX(0);
-                }
-                100% {
-                  transform: translateX(calc(-100% + ${containerRef.current?.clientWidth || 0}px));
-                }
-              }
-            `}
-          </style>
         </div>
       </div>
       {/* Working on text with ellipsis overflow */}

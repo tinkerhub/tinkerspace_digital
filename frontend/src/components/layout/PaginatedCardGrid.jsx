@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Header from './Header';
-import CardItem from '../cards/CardItem';
+import CardItem from '../cards/UserCard';
 
 function useGridLayout(cardWidth, cardHeight, gap) {
   const [layout, setLayout] = useState({ cols: 7, rows: 3 });

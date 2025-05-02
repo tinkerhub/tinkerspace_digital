@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/tinkerspace_digital/static/css/main.38b7ebb2.css",
-    "main.js": "/tinkerspace_digital/static/js/main.700d53da.js",
+    "main.css": "/tinkerspace_digital/static/css/main.3f172160.css",
+    "main.js": "/tinkerspace_digital/static/js/main.e6b0911f.js",
     "index.html": "/tinkerspace_digital/index.html",
-    "main.38b7ebb2.css.map": "/tinkerspace_digital/static/css/main.38b7ebb2.css.map",
-    "main.700d53da.js.map": "/tinkerspace_digital/static/js/main.700d53da.js.map"
+    "main.3f172160.css.map": "/tinkerspace_digital/static/css/main.3f172160.css.map",
+    "main.e6b0911f.js.map": "/tinkerspace_digital/static/js/main.e6b0911f.js.map"
   },
   "entrypoints": [
-    "static/css/main.38b7ebb2.css",
-    "static/js/main.700d53da.js"
+    "static/css/main.3f172160.css",
+    "static/js/main.e6b0911f.js"
   ]
 }

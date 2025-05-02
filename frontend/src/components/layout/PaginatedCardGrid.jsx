@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Header from './Header';
-import CardItem from '../cards/CardItem';
+import CardItem from '../cards/UserCard';
 
 function useGridLayout(cardWidth, cardHeight, gap) {
   const [layout, setLayout] = useState({ cols: 7, rows: 3 });
@@ -20,7 +20,7 @@ function useGridLayout(cardWidth, cardHeight, gap) {
 const CARD_WIDTH = 210;
 const CARD_HEIGHT = 260;
 const GAP = 20;
-const PAGE_INTERVAL = 10000;
+const PAGE_INTERVAL = 20000;
 
 export default function PaginatedCardGrid({ data }) {
   const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);

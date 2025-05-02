@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getCurrentWeather } from '../utils/api/weatherService';
+import { getCurrentWeather } from '../../utils/api/weatherService';
 
 const RainAnimation = () => {
   const [isRaining, setIsRaining] = useState(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentWeather } from '../../utils/api/weatherService';
-import RainAnimation from '../../styles/RainAnimation';
+import RainAnimation from '../animations/RainAnimation';
 
 export default function Header({ content }) {
   const [currentTime, setCurrentTime] = useState(new Date());

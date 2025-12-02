@@ -47,7 +47,7 @@ export default function CardContent({ card, textRef, containerRef, isOverflowing
         textOverflow: 'ellipsis',
         lineHeight: '1',
       }}>
-        {card.workingOn || '\u00A0'}
+        {card.workingOn || card.projectName || '\u00A0'}
       </div>
     </div>
   );

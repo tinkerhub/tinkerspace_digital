@@ -6,6 +6,9 @@ export const fetchData = async () => {
         if (!API_URL) {
             throw new Error('REACT_APP_API_BASE_URL is not set. Please configure it in your .env file.');
         }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);        
         const response = await fetch(`${API_URL}/checkin/active`, {
             method: 'GET',
             headers: {
@@ -15,6 +18,8 @@ export const fetchData = async () => {
             credentials: 'same-origin' // or 'include' if needed
         });
 
+        clearTimeout(timeoutId);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -24,11 +29,15 @@ export const fetchData = async () => {
             throw new Error("Response is not JSON. The backend server may not be running or the API URL is incorrect.");
         }
 
-        return await response.json();
+      const data = await response.json();
+        
+        if (!Array.isArray(data)) {
+            throw new Error('API returned non-array data');
+        }
+        
+        return data;
     } catch (error) {
         console.error('Error fetching data:', error);
-        // Return empty array instead of throwing to prevent app crash
-        // The app will still work, just without data
-        return [];
+        throw error;
     }
 };

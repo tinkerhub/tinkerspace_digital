@@ -44,7 +44,7 @@ export default function Header({ content, isDarkMode, setManualTheme }) {
 
   return (
     <div className="w-full flex flex-col items-center z-10 sticky top-0 pt-[clamp(1rem,4vh,3rem)] pb-[clamp(0.5rem,2vh,1.5rem)] font-geist pointer-events-none">
-      <div className="flex items-center gap-6 bg-white/40 dark:bg-black/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-xl shadow-black/5 dark:shadow-black/20 px-6 py-3 rounded-full pointer-events-auto transition-colors duration-500">
+      <div className="flex items-center gap-6 bg-white/40 dark:bg-black/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-xl shadow-black/5 dark:shadow-black/20 px-6 py-3 rounded-full pointer-events-auto transition-all duration-500 scale-[1.06]">
         
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />

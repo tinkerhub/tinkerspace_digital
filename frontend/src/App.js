@@ -162,10 +162,17 @@ function App() {
                 <PaginatedCardGrid data={data} isDarkMode={isDarkMode} setManualTheme={setManualTheme} />
                 
                 {/* Bottom Quote */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-10 opacity-60">
-                    <p className="font-instrument text-[#0a192f] dark:text-white text-4xl italic tracking-wide transition-colors duration-500">
-                        "Community is my spinach"
-                    </p>
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+                    <div className="flex items-center gap-3">
+                        <p className="font-instrument text-[#0a192f] dark:text-white text-4xl italic tracking-wide transition-colors duration-500 opacity-60">
+                            "Community is my spinach"
+                        </p>
+                        <img 
+                            src={`${process.env.PUBLIC_URL}/images/spinach.png`} 
+                            alt="Spinach" 
+                            className="w-10 h-10 object-contain drop-shadow-md"
+                        />
+                    </div>
                 </div>
 
                 {/* Bottom-Right Controls / Information */}
@@ -202,7 +209,7 @@ function App() {
                     <img 
                         src={`${process.env.PUBLIC_URL}/images/dont-look.png`} 
                         alt="Don't Look Decoration" 
-                        className="w-24 object-contain opacity-80"
+                        className="w-40 object-contain opacity-80 drop-shadow-md"
                     />
                 </div>
 

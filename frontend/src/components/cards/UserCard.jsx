@@ -14,7 +14,7 @@ const PURPOSE_COLORS = {
   'default': '#FFF3B0' // Soft Yellow
 };
 
-export default function UserCard({ card, CARD_HEIGHT }) {
+const UserCard = ({ card, CARD_HEIGHT }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef(null);
   const containerRef = useRef(null);
@@ -55,4 +55,6 @@ export default function UserCard({ card, CARD_HEIGHT }) {
       />
     </div>
   );
-}
+};
+
+export default React.memo(UserCard);

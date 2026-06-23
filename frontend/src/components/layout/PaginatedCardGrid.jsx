@@ -56,23 +56,9 @@ export default function PaginatedCardGrid({ data, isDarkMode, setManualTheme }) 
   const pageCards = data.slice(start, end);
   const emptySlots = cardsPerPage - pageCards.length;
 
-  const currentTime = new Date().toLocaleTimeString('en-US', { 
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true 
-  });
-  const currentDate = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit'
-  }).replace(/\//g, '/');
-
-  const space = '\u00A0\u00A0\u00A0\u00A0\u00A0';
-  const content = `${space}${currentTime}${space}•${space}${currentDate}${space}•${space}${data.length} Makers${space}•`;
-
   return (
     <div className="flex flex-col w-full h-full relative font-mono">
-      <Header content={content} isDarkMode={isDarkMode} setManualTheme={setManualTheme} />
+      <Header totalMakers={data.length} isDarkMode={isDarkMode} setManualTheme={setManualTheme} />
       <div 
         className="flex-1 w-full flex justify-between content-start py-[clamp(1rem,2vh,1.5rem)] mt-[clamp(1rem,2vh,1.5rem)] px-12"
         style={{

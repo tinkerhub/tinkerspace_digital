@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getCurrentWeather } from '../../utils/api/weatherService';
 
-export default function Header({ content, isDarkMode, setManualTheme }) {
+export default React.memo(function Header({ totalMakers, isDarkMode, setManualTheme }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [weather, setWeather] = useState(null);
 
@@ -39,8 +39,6 @@ export default function Header({ content, isDarkMode, setManualTheme }) {
       </svg>
     );
   };
-
-  const totalMakers = content ? content.split('•')[2]?.trim().split(' ')[0] : '0';
 
   return (
     <div className="w-full flex flex-col items-center z-10 sticky top-0 pt-[clamp(1rem,4vh,3rem)] pb-[clamp(0.5rem,2vh,1.5rem)] font-geist pointer-events-none">
@@ -112,4 +110,4 @@ export default function Header({ content, isDarkMode, setManualTheme }) {
       </div>
     </div>
   );
-}
+});

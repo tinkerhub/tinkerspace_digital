@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { fetchData } from './utils/api/fetchData';
 import { removeDuplicates } from './utils/helpers/removeDuplicates';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
-import TinkerSparks from './components/layout/TinkerSparks';
-import LedMarquee from './components/layout/LedMarquee';
 
 function App() {
     const [data, setData] = useState([]);

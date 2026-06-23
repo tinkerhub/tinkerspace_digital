@@ -1,34 +1,14 @@
 import React from 'react';
 
-export default function CardContent({ card, textRef, containerRef, isOverflowing }) {
+export default function CardContent({ card, textRef, containerRef, isOverflowing, purpose, purposeColor }) {
   return (
-    <div style={{ 
-      padding: '16px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '4px',
-      flex: 1,
-    }}>
-      <div style={{
-        fontSize: '20px',
-        fontWeight: '700',
-        color: '#fff',
-        letterSpacing: '0.5px',
-        lineHeight: '1.1',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        marginBottom: '4px',
-        height: '24px',
-      }}>
-        <div ref={containerRef} style={{ 
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
+    <div className="px-4 py-3 flex flex-col gap-1 w-full flex-1 bg-transparent">
+      <div className="text-[1.15rem] leading-tight font-semibold text-gray-800 dark:text-gray-100 tracking-tight whitespace-nowrap transition-colors duration-500">
+        <div ref={containerRef} className="overflow-hidden relative pb-1">
           <div
             ref={textRef}
+            className="whitespace-nowrap inline-block"
             style={{
-              whiteSpace: 'nowrap',
-              display: 'inline-block',
               animation: isOverflowing ? 'nameScroll 10s ease-in-out infinite alternate' : 'none',
               paddingRight: isOverflowing ? '20px' : '0',
             }}
@@ -37,16 +17,7 @@ export default function CardContent({ card, textRef, containerRef, isOverflowing
           </div>
         </div>
       </div>
-      <div style={{
-        fontSize: '14px',
-        color: '#666',
-        fontWeight: '600',
-        letterSpacing: '0.3px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        lineHeight: '1',
-      }}>
+      <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide whitespace-nowrap overflow-hidden text-ellipsis leading-none mt-1 transition-colors duration-500">
         {card.workingOn || card.projectName || '\u00A0'}
       </div>
     </div>

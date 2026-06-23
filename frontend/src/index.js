@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
@@ -106,9 +106,13 @@ const RootComponent = () => {
             height: '100%',
             pointerEvents: 'none',
             zIndex: -1,
-            backgroundImage: 'radial-gradient(circle, #333 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-            backgroundColor: '#18181b',
+            backgroundImage: `
+              linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+              linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px)
+            `,
+            backgroundSize: '96px 96px',
+            backgroundColor: 'var(--bg-color)',
+            transition: 'background-color 0.5s ease, background-image 0.5s ease',
           }}
         />
 

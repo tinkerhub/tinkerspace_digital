@@ -4,17 +4,17 @@ import UserImage from '../userdetails/UserImage';
 import UserBadges from '../userdetails/UserBadges';
 import UserInfo from '../userdetails/UserInfo';
 
-// Color mapping for different user purposes with pastel colors
+// Color mapping for different user purposes with soft pastel colors
 const PURPOSE_COLORS = {
-  'Attending an event': '#FFB3B3',
-  'On duty': '#FFB3B3',
-  'Visiting': '#B3FFB3',
-  'Working on a project': '#B3D9FF',
-  'Self Learning': '#FFE0B3',
-  'default': '#D9D9D9'
+  'Attending an event': '#FFD1D1', // Soft Red
+  'On duty': '#FFE5B4', // Soft Orange
+  'Visiting': '#D1FFD1', // Soft Green
+  'Working on a project': '#D1E8FF', // Soft Blue
+  'Self Learning': '#E8D1FF', // Soft Purple
+  'default': '#FFF3B0' // Soft Yellow
 };
 
-export default function UserCard({ card, CARD_HEIGHT }) {
+const UserCard = ({ card, CARD_HEIGHT }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef(null);
   const containerRef = useRef(null);
@@ -22,6 +22,7 @@ export default function UserCard({ card, CARD_HEIGHT }) {
   const userBadges = USER_BADGES[card.name] || [];
   const hasSecurityBadge = userBadges.includes('guard');
   const displayPurpose = hasSecurityBadge ? 'On duty' : card.purpose;
+  const purposeColor = PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS['default'];
 
   useEffect(() => {
     if (textRef.current && containerRef.current) {
@@ -32,30 +33,28 @@ export default function UserCard({ card, CARD_HEIGHT }) {
   }, [card.name]);
 
   return (
-    <div
+    <div 
+      className="bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden flex flex-col items-center transition-all duration-300"
       style={{
-        background: '#242424',
-        borderRadius: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        height: `${CARD_HEIGHT}px`,
-        position: 'relative',
+        width: '100%',
+        height: `${CARD_HEIGHT}px`
       }}
     >
       <UserImage 
         src={card.avatar} 
         alt={card.name} 
         purpose={displayPurpose}
-        purposeColor={PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS.default}
+        purposeColor={purposeColor}
       />
       <UserBadges name={card.name} />
       <UserInfo 
-        card={{...card, purpose: displayPurpose}}
+        card={card} 
         textRef={textRef} 
         containerRef={containerRef} 
         isOverflowing={isOverflowing}
       />
     </div>
   );
-}
+};
+
+export default React.memo(UserCard);

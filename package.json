@@ -3,23 +3,26 @@
   "name": "app",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
   "dependencies": {
-    "lottie-react": "^2.4.0",
+    "lottie-react": "^2.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "^5.0.1",
-    "react-slick": "^0.30.2",
+    "react-slick": "^0.31.0",
     "react-snowfall": "^2.2.0",
     "slick-carousel": "^1.8.1"
   },
   "scripts": {
-    "start:backend": "cd backend && deno run --allow-net --allow-read --watch src/server.ts",
-    "start": "react-scripts start",
+    "preinstall": "npx only-allow pnpm",
+    "dev": "react-scripts start",
     "build": "react-scripts build",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "deploy": "pnpm run build && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -40,8 +43,9 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/plugin-transform-private-property-in-object": "^7.29.7",
     "eslint-config-react-app": "^7.0.1",
-    "gh-pages": "^6.1.1"
+    "gh-pages": "^6.3.0",
+    "only-allow": "^1.2.2"
   }
 }

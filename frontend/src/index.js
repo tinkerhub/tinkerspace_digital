@@ -68,7 +68,7 @@ const RootComponent = () => {
   // };
 
   return (
-    <React.StrictMode>
+    
       <div
         style={{
           position: 'relative',
@@ -119,7 +119,7 @@ const RootComponent = () => {
         {/* Main application */}
         <App />
       </div>
-    </React.StrictMode>
+    
   );
 };
 

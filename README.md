@@ -6,7 +6,7 @@ Digital display app for TinkerSpace — rotates between maker profiles and the e
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+
+- [Node.js](https://nodejs.org/) 22+
 - [pnpm](https://pnpm.io/) 11+ (`corepack enable` if needed)
 
 This project uses pnpm only. `npm install` and `yarn` are blocked.

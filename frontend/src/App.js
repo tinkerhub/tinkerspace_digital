@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { fetchData } from './utils/api/fetchData';
 import { removeDuplicates } from './utils/helpers/removeDuplicates';
+import DISPLAY_CONFIG from './utils/constants/displayConfig';
+import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
+import Header from './components/layout/Header';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
+import CalendarDashboard from './components/layout/CalendarDashboard';
+
+const { VIEWS } = DISPLAY_CONFIG;
 
 function App() {
     const [data, setData] = useState([]);
@@ -10,6 +16,11 @@ function App() {
     const [isAppReady, setIsAppReady] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [manualTheme, setManualTheme] = useState(null);
+
+    // ── Display Orchestration Engine ─────────────────────────────
+    const { currentView } = useDisplayOrchestrator(data.length);
+    const showMakers = currentView === VIEWS.MAKERS;
+    const showCalendar = currentView === VIEWS.CALENDAR;
 
     useEffect(() => {
         // Keep screen awake
@@ -157,7 +168,33 @@ function App() {
                     </h1>
                 </div>
 
-                <PaginatedCardGrid data={data} isDarkMode={isDarkMode} setManualTheme={setManualTheme} />
+                {/* ── Shared Header (single instance, never remounts) ─── */}
+                <div className="flex flex-col w-full h-full relative">
+                    <div className="relative z-20">
+                        <Header totalMakers={data.length} isDarkMode={isDarkMode} setManualTheme={setManualTheme} />
+                    </div>
+
+                    {/* Content area below header — views crossfade here */}
+                    <div className="flex-1 relative min-h-0">
+                        {/* ── Display Orchestration: Maker View ──────────── */}
+                        <div
+                            className={`absolute inset-0 flex flex-col transition-opacity duration-700 ease-in-out ${
+                                showMakers ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                            }`}
+                        >
+                            <PaginatedCardGrid data={data} />
+                        </div>
+
+                        {/* ── Display Orchestration: Calendar View ───────── */}
+                        <div
+                            className={`absolute inset-0 flex flex-col transition-opacity duration-700 ease-in-out ${
+                                showCalendar ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                            }`}
+                        >
+                            <CalendarDashboard />
+                        </div>
+                    </div>
+                </div>
                 
                 {/* Bottom Quote */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-10">

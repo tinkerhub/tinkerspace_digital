@@ -1,44 +1,21 @@
 import React from 'react';
-import CalendarDay from './CalendarDay';
-
-/**
- * CalendarGrid — renders a monthly calendar grid with day headers and event indicators.
- *
- * Pure rendering component. All calendar math is done here from the
- * currentDate and events props. No API calls, no side effects.
- *
- * @param {{
- *   currentDate: Date,
- *   events: Array<{ id: string, title: string, starts_at: string, ends_at: string|null, category: string, status: string }>,
- *   className?: string
- * }} props
- */
+import { getCategoryColors } from './EventBadge';
+import { layoutWeekEvents, MAX_TRACKS } from '../../utils/calendar/calendarLayout';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-/**
- * Generates the 6-row × 7-col grid of dates for a given month.
- * Each entry: { date, dayOfMonth, isCurrentMonth }
- */
 function generateMonthGrid(currentDate) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // First day of the month
   const firstDay = new Date(year, month, 1);
-  // Day of week the month starts on (0 = Sun)
   const startDayOfWeek = firstDay.getDay();
-
-  // Last day of the month
   const lastDay = new Date(year, month + 1, 0);
   const totalDaysInMonth = lastDay.getDate();
-
-  // Previous month's trailing days
   const prevMonthLastDay = new Date(year, month, 0).getDate();
 
   const cells = [];
 
-  // Fill leading days from previous month
   for (let i = startDayOfWeek - 1; i >= 0; i--) {
     const day = prevMonthLastDay - i;
     cells.push({
@@ -48,7 +25,6 @@ function generateMonthGrid(currentDate) {
     });
   }
 
-  // Fill current month
   for (let day = 1; day <= totalDaysInMonth; day++) {
     cells.push({
       date: new Date(year, month, day),
@@ -57,8 +33,7 @@ function generateMonthGrid(currentDate) {
     });
   }
 
-  // Fill trailing days from next month
-  const remainingCells = 42 - cells.length; // 6 rows × 7 cols
+  const remainingCells = 42 - cells.length;
   for (let day = 1; day <= remainingCells; day++) {
     cells.push({
       date: new Date(year, month + 1, day),
@@ -68,35 +43,6 @@ function generateMonthGrid(currentDate) {
   }
 
   return cells;
-}
-
-/**
- * Groups events by date key (YYYY-MM-DD) for O(1) lookup.
- * Events spanning multiple days appear under each day they cover.
- */
-function groupEventsByDate(events) {
-  const map = {};
-
-  events.forEach(event => {
-    const start = new Date(event.starts_at);
-    const end = event.ends_at ? new Date(event.ends_at) : start;
-
-    // Normalise to date-only
-    const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-
-    let current = new Date(startDate);
-    while (current <= endDate) {
-      const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
-      if (!map[key]) {
-        map[key] = [];
-      }
-      map[key].push(event);
-      current.setDate(current.getDate() + 1);
-    }
-  });
-
-  return map;
 }
 
 function isSameDay(a, b) {
@@ -110,36 +56,93 @@ function isSameDay(a, b) {
 const CalendarGrid = ({ currentDate, events = [], className = '' }) => {
   const today = new Date();
   const cells = generateMonthGrid(currentDate);
-  const eventsByDate = groupEventsByDate(events);
+  
+  // Group cells into weeks
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7));
+  }
 
   return (
-    <div className={className}>
+    <div className={`flex flex-col w-full h-full ${className}`}>
       {/* Day-of-week headers */}
-      <div className="grid grid-cols-7 mb-1">
+      <div className="grid grid-cols-7 border-b border-white/20 dark:border-white/10">
         {DAY_LABELS.map(label => (
           <div
             key={label}
-            className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 py-1.5 transition-colors duration-500"
+            className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 py-2"
           >
             {label}
           </div>
         ))}
       </div>
 
-      {/* Calendar cells */}
-      <div className="grid grid-cols-7">
-        {cells.map((cell, idx) => {
-          const key = `${cell.date.getFullYear()}-${String(cell.date.getMonth() + 1).padStart(2, '0')}-${String(cell.date.getDate()).padStart(2, '0')}`;
-          const dayEvents = eventsByDate[key] || [];
+      {/* Weeks */}
+      <div className="flex flex-col flex-1 border-l border-t border-white/20 dark:border-white/10">
+        {weeks.map((week, weekIdx) => {
+          // Offload layout calculations to dedicated utility
+          const { tracks, overflows } = layoutWeekEvents(week, events);
 
           return (
-            <CalendarDay
-              key={idx}
-              date={cell.dayOfMonth}
-              events={dayEvents}
-              isToday={isSameDay(cell.date, today)}
-              isCurrentMonth={cell.isCurrentMonth}
-            />
+            <div key={weekIdx} className="relative flex-1 min-h-[90px] border-b border-white/20 dark:border-white/10">
+              
+              {/* Background grid for cells */}
+              <div className="absolute inset-0 grid grid-cols-7 pointer-events-none">
+                {week.map((cell, idx) => (
+                  <div key={idx} className="border-r border-white/20 dark:border-white/10" />
+                ))}
+              </div>
+              
+              {/* Foreground content grid */}
+              <div className="grid grid-cols-7 auto-rows-max gap-y-1 py-1 relative z-10 h-full">
+                {/* Row 1: Day numbers */}
+                {week.map((cell, idx) => (
+                  <div key={`day-${idx}`} style={{ gridColumn: idx + 1, gridRow: 1 }} className="px-1.5 pb-0.5">
+                    <span
+                      className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full transition-all duration-300 ${
+                        isSameDay(cell.date, today)
+                          ? 'bg-gray-800 dark:bg-white text-white dark:text-gray-900'
+                          : !cell.isCurrentMonth
+                            ? 'text-gray-400/50 dark:text-gray-500/50'
+                            : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {cell.dayOfMonth}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Rows 2+: Continuous Event Bars */}
+                {tracks.map((event, idx) => {
+                  const colors = getCategoryColors(event.category);
+                  return (
+                    <div
+                      key={`event-${event.id}-${idx}`}
+                      style={{ gridColumn: `${event.startCol} / span ${event.span}`, gridRow: event.trackIdx + 2 }}
+                      className="px-1 z-10"
+                    >
+                      <div className={`truncate text-[10px] font-semibold tracking-wide leading-tight px-1.5 py-0.5 rounded-none ${colors.badge}`}>
+                        {event.title}
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {/* Overflow indicators */}
+                {overflows.map((count, colIdx) => {
+                  if (count === 0) return null;
+                  return (
+                    <div
+                      key={`overflow-${colIdx}`}
+                      style={{ gridColumn: colIdx + 1, gridRow: MAX_TRACKS + 2 }}
+                      className="px-2 text-[9px] font-medium text-gray-500 dark:text-gray-400 mt-0.5"
+                    >
+                      +{count} more
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </div>

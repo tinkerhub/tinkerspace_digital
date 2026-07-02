@@ -86,7 +86,7 @@ function App() {
         };
 
         checkTimeTheme();
-        const interval = setInterval(checkTimeTheme, 60000); // Check every minute
+        const interval = setInterval(checkTimeTheme, 20000); // Check every 20 seconds
         return () => clearInterval(interval);
     }, [manualTheme]);
 

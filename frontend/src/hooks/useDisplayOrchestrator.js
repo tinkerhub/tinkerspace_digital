@@ -19,13 +19,11 @@ const { VIEWS, MAKER_DURATION, CALENDAR_DURATION } = DISPLAY_CONFIG;
  * @param {number} makerCount - Current number of active makers.
  * @returns {{ currentView: string }}
  */
-export default function useDisplayOrchestrator(makerCount) {
+export default function useDisplayOrchestrator(makerCount, totalPages = 1, hasFetched = false) {
   const hasMakers = makerCount > 0;
 
-  // Start with makers view when makers exist, calendar otherwise
-  const [currentView, setCurrentView] = useState(
-    hasMakers ? VIEWS.MAKERS : VIEWS.CALENDAR
-  );
+  // Start with makers view by default so it doesn't flash calendar on load
+  const [currentView, setCurrentView] = useState(VIEWS.MAKERS);
 
   const timerRef = useRef(null);
 
@@ -41,16 +39,21 @@ export default function useDisplayOrchestrator(makerCount) {
   const scheduleNext = useCallback((view) => {
     clearRotationTimer();
 
-    const duration = view === VIEWS.MAKERS ? MAKER_DURATION : CALENDAR_DURATION;
+    const duration = view === VIEWS.MAKERS ? (MAKER_DURATION * totalPages) : CALENDAR_DURATION;
 
     timerRef.current = setTimeout(() => {
       const nextView = view === VIEWS.MAKERS ? VIEWS.CALENDAR : VIEWS.MAKERS;
       setCurrentView(nextView);
     }, duration);
-  }, [clearRotationTimer]);
+  }, [clearRotationTimer, totalPages]);
 
   // ── React to maker availability changes ───────────────────────
   useEffect(() => {
+    if (!hasFetched) {
+      // Still loading data, don't force to calendar yet
+      return;
+    }
+
     if (!hasMakers) {
       // No makers → immediately show calendar, stop rotation
       clearRotationTimer();
@@ -66,7 +69,7 @@ export default function useDisplayOrchestrator(makerCount) {
       }
       return prev;
     });
-  }, [hasMakers, clearRotationTimer]);
+  }, [hasMakers, hasFetched, clearRotationTimer]);
 
   // ── Start / restart the rotation timer whenever the view changes ─
   useEffect(() => {

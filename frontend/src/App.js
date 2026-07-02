@@ -3,22 +3,34 @@ import { fetchData } from './utils/api/fetchData';
 import { removeDuplicates } from './utils/helpers/removeDuplicates';
 import DISPLAY_CONFIG from './utils/constants/displayConfig';
 import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
+import useGridLayout from './hooks/useGridLayout';
 import Header from './components/layout/Header';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
 import CalendarDashboard from './components/layout/CalendarDashboard';
 
 const { VIEWS } = DISPLAY_CONFIG;
 
+// Constants matching those in PaginatedCardGrid
+const CARD_WIDTH = 211;
+const CARD_HEIGHT = 257;
+const GAP = 32;
+
 function App() {
     const [data, setData] = useState([]);
+    const [hasFetched, setHasFetched] = useState(false);
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [startAnimation, setStartAnimation] = useState(false);
     const [isAppReady, setIsAppReady] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [manualTheme, setManualTheme] = useState(null);
 
+    // Calculate layout here to determine totalPages for orchestrator
+    const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
+    const cardsPerPage = cols * rows;
+    const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
+
     // ── Display Orchestration Engine ─────────────────────────────
-    const { currentView } = useDisplayOrchestrator(data.length);
+    const { currentView } = useDisplayOrchestrator(data.length, totalPages, hasFetched);
     const showMakers = currentView === VIEWS.MAKERS;
     const showCalendar = currentView === VIEWS.CALENDAR;
 
@@ -40,6 +52,8 @@ function App() {
                 setData(removeDuplicates(records));
             } catch (error) {
                 console.error('Fetch failed:', error);
+            } finally {
+                setHasFetched(true);
             }
         };
 

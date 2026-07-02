@@ -196,7 +196,7 @@ function App() {
                                 showMakers ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                         >
-                            <PaginatedCardGrid data={data} />
+                            <PaginatedCardGrid data={data} isActive={showMakers} />
                         </div>
 
                         {/* ── Display Orchestration: Calendar View ───────── */}

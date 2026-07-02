@@ -7,7 +7,7 @@ const CARD_HEIGHT = 257;
 const GAP = 32;
 const PAGE_INTERVAL = 20000;
 
-export default function PaginatedCardGrid({ data }) {
+export default function PaginatedCardGrid({ data, isActive = true }) {
   const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
   const cardsPerPage = cols * rows;
   const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
@@ -15,15 +15,25 @@ export default function PaginatedCardGrid({ data }) {
   const intervalRef = useRef();
 
   useEffect(() => {
-    setPage(0);
-  }, [cols, rows]);
+    if (isActive) {
+      setPage(0);
+    }
+  }, [isActive, cols, rows]);
 
   useEffect(() => {
+    if (!isActive) return;
+
     intervalRef.current = setInterval(() => {
-      setPage((p) => (p + 1) % totalPages);
+      setPage((p) => {
+        // Stop at the last page instead of looping back to 0, 
+        // because the orchestrator will transition to the calendar view.
+        if (p + 1 >= totalPages) return p;
+        return p + 1;
+      });
     }, PAGE_INTERVAL);
+    
     return () => clearInterval(intervalRef.current);
-  }, [totalPages]);
+  }, [totalPages, isActive]);
 
   const start = page * cardsPerPage;
   const end = start + cardsPerPage;

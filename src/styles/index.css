@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-color: #fafafa;
+  --grid-color: rgba(0, 0, 0, 0.07);
+}
+
+.dark {
+  --bg-color: #121212; /* Deep architectural charcoal */
+  --grid-color: rgba(255, 255, 255, 0.07); /* Subtle white blueprint lines */
+}
+@layer utilities {
+  .animate-reveal {
+    animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-breathe {
+    animation: breathe 4s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes reveal {
+  0% { opacity: 0; transform: translateY(10px); filter: blur(5px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes breathe {
+  0% { opacity: 0.4; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes nameScroll {
+    0% { transform: translateX(0); }
+    40% { transform: translateX(-40px); }
+    60% { transform: translateX(-40px); }
+    90% { transform: translateX(0); }
+    100% { transform: translateX(0); }
+}

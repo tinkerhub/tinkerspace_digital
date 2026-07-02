@@ -1,5 +1,5 @@
 {
-  "homepage": "https://tinkerhub.github.io/tinkerspace_digital",
+  "homepage": ".",
   "name": "app",
   "version": "0.1.0",
   "private": true,
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start:backend": "cd backend && deno run --allow-net --allow-read --watch src/server.ts",
-    "start": "HOST=0.0.0.0 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",

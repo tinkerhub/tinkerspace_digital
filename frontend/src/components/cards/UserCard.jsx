@@ -40,17 +40,17 @@ const UserCard = ({ card, CARD_HEIGHT }) => {
         height: `${CARD_HEIGHT}px`
       }}
     >
-      <UserImage 
-        src={card.avatar} 
-        alt={card.name} 
+      <UserImage
+        src={card.avatar}
+        alt={card.name}
         purpose={displayPurpose}
         purposeColor={purposeColor}
       />
       <UserBadges name={card.name} />
-      <UserInfo 
-        card={card} 
-        textRef={textRef} 
-        containerRef={containerRef} 
+      <UserInfo
+        card={card}
+        textRef={textRef}
+        containerRef={containerRef}
         isOverflowing={isOverflowing}
       />
     </div>

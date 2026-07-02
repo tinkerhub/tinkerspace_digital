@@ -10,7 +10,7 @@ export const MAX_TRACKS = 3;
  *
  * @param {Array} week - Array of 7 day objects { date, dayOfMonth, ... }
  * @param {Array} events - Full list of events
- * @returns {{ tracks: Array, overflows: Array }}
+ * @returns {{ tracks: Array }}
  */
 export function layoutWeekEvents(week, events) {
   const weekStart = week[0].date;
@@ -50,14 +50,15 @@ export function layoutWeekEvents(week, events) {
     return a.startMs - b.startMs;
   });
 
-  // 3. Allocate rows (tracks)
+  // 3. Allocate rows (tracks) — no visual cap, UI handles overflow via auto-scroll.
+  //    Safety limit prevents infinite loops from unexpected edge cases.
+  const SAFETY_LIMIT = 20;
   const trackAvailability = [];
   const tracks = [];
-  const overflows = Array(7).fill(0); // Count of overflow events per column (0-indexed)
 
   weekEvents.forEach(event => {
     let trackIdx = 0;
-    while (true) {
+    while (trackIdx < SAFETY_LIMIT) {
       // Initialize track array if not exists
       if (!trackAvailability[trackIdx]) {
         trackAvailability[trackIdx] = Array(7).fill(false);
@@ -73,24 +74,17 @@ export function layoutWeekEvents(week, events) {
       }
       
       if (canFit) {
-        if (trackIdx < MAX_TRACKS) {
-          // Commit to this track
-          for (let c = event.startCol - 1; c < event.endCol; c++) {
-            trackAvailability[trackIdx][c] = true;
-          }
-          tracks.push({ ...event, trackIdx });
-        } else {
-          // Track is >= MAX_TRACKS, so it overflows
-          for (let c = event.startCol - 1; c < event.endCol; c++) {
-            overflows[c]++;
-          }
+        for (let c = event.startCol - 1; c < event.endCol; c++) {
+          trackAvailability[trackIdx][c] = true;
         }
-        break; // Placed or overflowed, move to next event
+        tracks.push({ ...event, trackIdx });
+        break;
       }
       
       trackIdx++;
     }
+    // If not placed after SAFETY_LIMIT tracks, silently drop the event
   });
 
-  return { tracks, overflows };
+  return { tracks };
 }

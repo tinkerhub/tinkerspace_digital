@@ -168,19 +168,6 @@ function App() {
             {/* Main Application Content */}
             <div className={`absolute inset-0 transition-opacity duration-[1500ms] ${isAppReady ? 'opacity-100' : 'opacity-0'}`}>
 
-                {/* Background Watermark */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden select-none px-12">
-                    <h1 className="w-full flex justify-between text-[16vw] font-geist font-black tracking-tighter leading-none text-[#121212] dark:text-white scale-y-125">
-                        {"HI, MAKERS".split('').map((char, i) => (
-                            <span 
-                                key={i} 
-                                className="opacity-[0.03] dark:opacity-[0.02]"
-                            >
-                                {char === ' ' ? '\u00A0\u00A0' : char}
-                            </span>
-                        ))}
-                    </h1>
-                </div>
 
                 {/* ── Shared Header (single instance, never remounts) ─── */}
                 <div className="flex flex-col w-full h-full relative">

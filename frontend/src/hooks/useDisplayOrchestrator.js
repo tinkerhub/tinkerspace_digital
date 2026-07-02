@@ -26,6 +26,8 @@ export default function useDisplayOrchestrator(makerCount, totalPages = 1, hasFe
   const [currentView, setCurrentView] = useState(VIEWS.MAKERS);
 
   const timerRef = useRef(null);
+  const totalPagesRef = useRef(totalPages);
+  totalPagesRef.current = totalPages;
 
   // ── Clear any running rotation timer ──────────────────────────
   const clearRotationTimer = useCallback(() => {
@@ -39,13 +41,13 @@ export default function useDisplayOrchestrator(makerCount, totalPages = 1, hasFe
   const scheduleNext = useCallback((view) => {
     clearRotationTimer();
 
-    const duration = view === VIEWS.MAKERS ? (MAKER_DURATION * totalPages) : CALENDAR_DURATION;
+    const duration = view === VIEWS.MAKERS ? (MAKER_DURATION * totalPagesRef.current) : CALENDAR_DURATION;
 
     timerRef.current = setTimeout(() => {
       const nextView = view === VIEWS.MAKERS ? VIEWS.CALENDAR : VIEWS.MAKERS;
       setCurrentView(nextView);
     }, duration);
-  }, [clearRotationTimer, totalPages]);
+  }, [clearRotationTimer]);
 
   // ── React to maker availability changes ───────────────────────
   useEffect(() => {

@@ -23,6 +23,7 @@ const CalendarDashboard = () => {
   const [data, setData] = useState(null);            // null = never loaded
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const isFetchingRef = useRef(false);               // prevents duplicate requests
+  const hasLoadedRef = useRef(false);                 // tracks if we ever got good data
   const intervalRef = useRef(null);
 
   // ── Fetch logic ────────────────────────────────────────────────
@@ -38,8 +39,11 @@ const CalendarDashboard = () => {
       // never had a successful load (so empty states render).
       const hasData = result.generated_at !== null;
 
-      if (hasData || data === null) {
+      if (hasData || !hasLoadedRef.current) {
         setData(result);
+        if (hasData) {
+          hasLoadedRef.current = true;
+        }
       }
       // If the fetch returned fallback (generated_at === null) but we
       // already have data, we silently keep the previous data.
@@ -48,11 +52,9 @@ const CalendarDashboard = () => {
       // swallow and keep the previous state.
     } finally {
       isFetchingRef.current = false;
-      if (isInitialLoad) {
-        setIsInitialLoad(false);
-      }
+      setIsInitialLoad(false);
     }
-  }, [data, isInitialLoad]);
+  }, []);
 
   // ── Mount: initial fetch + polling ─────────────────────────────
   useEffect(() => {

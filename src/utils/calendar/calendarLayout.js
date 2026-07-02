@@ -58,7 +58,6 @@ export function layoutWeekEvents(week, events) {
 
   weekEvents.forEach(event => {
     let trackIdx = 0;
-    let placed = false;
     while (trackIdx < SAFETY_LIMIT) {
       // Initialize track array if not exists
       if (!trackAvailability[trackIdx]) {
@@ -79,7 +78,6 @@ export function layoutWeekEvents(week, events) {
           trackAvailability[trackIdx][c] = true;
         }
         tracks.push({ ...event, trackIdx });
-        placed = true;
         break;
       }
       

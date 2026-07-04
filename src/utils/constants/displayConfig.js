@@ -12,7 +12,7 @@ const DISPLAY_CONFIG = Object.freeze({
   MAKER_DURATION: 20_000,
 
   /** Duration (ms) the Calendar Dashboard is shown before rotating */
-  CALENDAR_DURATION: 40_000,
+  CALENDAR_DURATION: 10_000,
 
   /** Display views — used as state values by the orchestrator */
   VIEWS: Object.freeze({

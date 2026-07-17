@@ -6,20 +6,20 @@ export const BADGE_TYPES = {
 
 export const USER_BADGES = {
   // Team Members
-  'Reema Shaji': [BADGE_TYPES.TEAM_MEMBER],
-  'Johnson Regi': [BADGE_TYPES.TEAM_MEMBER],
-  'Arundhathi Krishna': [BADGE_TYPES.TEAM_MEMBER],
+  'Harry Potter': [BADGE_TYPES.TEAM_MEMBER],
+  'Ron Weasley': [BADGE_TYPES.TEAM_MEMBER],
+  'Ginny Weasley': [BADGE_TYPES.TEAM_MEMBER],
   'Kurian Jacob': [BADGE_TYPES.TEAM_MEMBER],
   'Mehar M P': [BADGE_TYPES.TEAM_MEMBER],
   'Jasim C M': [BADGE_TYPES.TEAM_MEMBER],
   'User 1': [BADGE_TYPES.TEAM_MEMBER],
   
   // Project Contributors
-  'Imad Ibrahim': [BADGE_TYPES.PROJECT_CONTRIBUTOR],
-  'Affan Sajid': [BADGE_TYPES.PROJECT_CONTRIBUTOR],
+  'Hermione Granger': [BADGE_TYPES.PROJECT_CONTRIBUTOR],
+  'Luna Lovegood': [BADGE_TYPES.PROJECT_CONTRIBUTOR],
   
   // Guards
-  'Chandran P K': [BADGE_TYPES.GUARD],
+  'Rubeus Hagrid': [BADGE_TYPES.GUARD],
   'User 3': [BADGE_TYPES.GUARD]
 };
 

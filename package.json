@@ -20,7 +20,10 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "react-scripts start",
+    "dev:mock": "node scripts/dev-with-mocks.js",
+    "mock:server": "node mock-server/server.js",
     "build": "react-scripts build",
+    "build:mock": "node scripts/react-scripts-with-mocks.js build",
     "test": "react-scripts test",
     "deploy": "pnpm run build && gh-pages -d build"
   },

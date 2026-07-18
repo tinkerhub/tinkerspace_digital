@@ -114,8 +114,9 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       }
     }
 
-    const isHighEnergy = POSES[nextPose].energy === 'high';
-    if (isHighEnergy) {
+    const startsSalientCooldown = POSES[nextPose].salientRole === 'community-event'
+      || Boolean(effects?.storyCompleted);
+    if (startsSalientCooldown) {
       nextSalientAt.current = Date.now() + randomDuration(
         POLICY_LIMITS.salientCooldown.min,
         POLICY_LIMITS.salientCooldown.max,
@@ -195,7 +196,12 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       });
       weatherPoseRef.current = nextWeatherPose;
     }
-    if (!nextWeatherPose) weatherPoseRef.current = null;
+    if (!nextWeatherPose) {
+      weatherPoseRef.current = null;
+      pendingPoses.current = pendingPoses.current.filter(
+        (event) => event.dedupeKey !== EVENT_DEFINITIONS.weather.dedupeKey,
+      );
+    }
   }, [weather, isVisible, queueEventAtLoopBoundary]);
 
   useEffect(() => {

@@ -106,6 +106,7 @@ export function sanitizeEvents(events, now) {
     && Number.isFinite(event.expiresAt)
     && Number.isFinite(event.priority)
     && typeof event.reactionPose === 'string'
+    && ['salient', 'weather'].includes(event.cooldown)
     && event.expiresAt > now
     && POSES[event.reactionPose]
   ));

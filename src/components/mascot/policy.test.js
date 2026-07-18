@@ -111,9 +111,10 @@ describe('mascot behaviour policy', () => {
     const malformed = event({ dedupeKey: 'bad', reactionPose: 'missing-pose' });
     const invalidTiming = event({ dedupeKey: 'invalid-timing', createdAt: Number.NaN });
     const invalidPriority = event({ dedupeKey: 'invalid-priority', priority: Number.POSITIVE_INFINITY });
+    const invalidCooldown = event({ dedupeKey: 'invalid-cooldown', cooldown: 'unknown' });
     const decision = decideNextPose({
       ...baseContext,
-      pendingEvents: [stale, malformed, invalidTiming, invalidPriority, older],
+      pendingEvents: [stale, malformed, invalidTiming, invalidPriority, invalidCooldown, older],
     });
 
     expect(getEffectiveEventPriority(older, baseContext.now)).toBe(3);

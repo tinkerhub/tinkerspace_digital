@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import CardItem from '../cards/UserCard';
 import useGridLayout from '../../hooks/useGridLayout';
+import { getMakerCardsPerPage } from '../../utils/layout/makerGrid';
 
 const CARD_WIDTH = 211;
 const CARD_HEIGHT = 257;
@@ -11,7 +12,7 @@ export default function PaginatedCardGrid({ data, isActive = true }) {
   const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
   const totalSlots = cols * rows;
   // Keep the bottom-right grid cell clear for the fixed mascot overlay.
-  const cardsPerPage = Math.max(1, totalSlots - (totalSlots > 1 ? 1 : 0));
+  const cardsPerPage = getMakerCardsPerPage(cols, rows);
   const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
   const [page, setPage] = useState(0);
   const intervalRef = useRef();

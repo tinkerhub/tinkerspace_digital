@@ -7,6 +7,7 @@ import useGridLayout from './hooks/useGridLayout';
 import Header from './components/layout/Header';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
 import CalendarDashboard from './components/layout/CalendarDashboard';
+import TinkerHubMascot from './components/mascot/TinkerHubMascot';
 
 const { VIEWS } = DISPLAY_CONFIG;
 
@@ -241,11 +242,10 @@ function App() {
                     </button>
                     */}
 
-                    {/* Bottom-Right Graphic */}
-                    <img 
-                        src={`${process.env.PUBLIC_URL}/images/dont-look.png`} 
-                        alt="Don't Look Decoration" 
-                        className="w-40 object-contain opacity-80 drop-shadow-md"
+                    <TinkerHubMascot
+                        makerCount={data.length}
+                        currentView={currentView}
+                        isVisible={isAppReady}
                     />
                 </div>
 

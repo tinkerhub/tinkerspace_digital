@@ -17,12 +17,40 @@ This project uses pnpm only. `npm install` and `yarn` are blocked.
 git clone https://github.com/tinkerhub/tinkerspace_digital.git
 cd tinkerspace_digital
 pnpm install
+pnpm dev:mock
+```
+
+The app runs at [http://localhost:3000](http://localhost:3000).
+
+### Local development without private backend access
+
+Use:
+
+```bash
+pnpm dev:mock
+```
+
+This starts:
+
+- the React dev server on `http://localhost:3000`
+- a local mock API server on `http://localhost:4010`
+
+The mock server exposes the same read endpoints the screen uses in production:
+
+- `GET /checkin/active`
+- `GET /api/v1/display`
+
+The seeded mock payloads include active makers, a live event, upcoming events, and a populated calendar so contributors can work on the UI without access to the internal TinkerHub services.
+
+### Local setup with private backend access
+
+If you have access to the real backend services:
+
+```bash
 cp .env.example .env
 # fill in the values in .env
 pnpm dev
 ```
-
-The app runs at [http://localhost:3000](http://localhost:3000).
 
 ### Environment variables
 
@@ -39,7 +67,10 @@ Copy `.env.example` to `.env` and set:
 | Command | Description |
 |---|---|
 | `pnpm dev` | Start the development server |
+| `pnpm dev:mock` | Start the development server with the built-in mock backend |
+| `pnpm mock:server` | Start only the local mock backend on port `4010` |
 | `pnpm build` | Create a production build |
+| `pnpm build:mock` | Create a production build configured against local mock API URLs |
 | `pnpm test` | Run tests |
 | `pnpm deploy` | Build and publish to GitHub Pages (legacy; production uses Netlify) |
 

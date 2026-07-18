@@ -10,8 +10,8 @@ import { PLAYBACK_DURATIONS, POLICY_LIMITS, POSE_EVENT_PRIORITY, POSES } from '.
 import { decideNextPose, getMakerDomain, getWeatherPose } from './policy';
 
 const FADE_MS = 380;
-const AWAKENING_DURATION_MS = POSES.awakening.cycle * 4;
-const RETURNING_DURATION_MS = POSES.returning.cycle * 4;
+const AWAKENING_DURATION_MS = POSES.awakening.cycle * getPlayback(POSES.awakening).cycles;
+const RETURNING_DURATION_MS = POSES.returning.cycle * getPlayback(POSES.returning).cycles;
 
 function randomDuration(min, max) {
   return min + Math.round(Math.random() * (max - min));
@@ -191,8 +191,9 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       && Date.now() - lastWeatherReactionAt.current >= POLICY_LIMITS.weatherCooldown
     ) {
       queuePoseAtLoopBoundary(nextWeatherPose);
+      weatherPoseRef.current = nextWeatherPose;
     }
-    weatherPoseRef.current = nextWeatherPose;
+    if (!nextWeatherPose) weatherPoseRef.current = null;
   }, [weather, isVisible, queuePoseAtLoopBoundary]);
 
   useEffect(() => {
@@ -221,6 +222,8 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     }
 
     const currentPose = activePoseRef.current;
+    if (currentPose !== 'returning') setWordmarkVisible(true);
+
     if (currentPose === 'returning') {
       scheduleNext(RETURNING_DURATION_MS);
     } else if (POSES[currentPose].kind === 'ambient') {

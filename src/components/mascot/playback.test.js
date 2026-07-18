@@ -1,6 +1,5 @@
 import {
   enqueuePose,
-  chooseWeightedPose,
   getPoseDuration,
   getQueueDelay,
   takeEligiblePose,
@@ -48,23 +47,4 @@ describe('mascot playback helpers', () => {
     expect(getPoseDuration(oneShotPose, false, {}, () => 300)).toBe(1300);
   });
 
-  it('strongly deprioritizes rest after recovery without banning it', () => {
-    const poses = {
-      reset: { category: 'recovery' },
-      rest: { category: 'rest', avoidAfter: ['recovery'] },
-      laptop: { category: 'focus' },
-    };
-
-    expect(chooseWeightedPose(['rest', 'laptop'], poses, [], 'reset', () => 0.5)).toBe('laptop');
-    expect(chooseWeightedPose(['rest', 'laptop'], poses, [], 'reset', () => 0)).toBe('rest');
-  });
-
-  it('preserves zero weights and does not penalize uncategorized poses', () => {
-    const poses = {
-      disabled: { weight: 0 },
-      active: { weight: 1 },
-    };
-
-    expect(chooseWeightedPose(['disabled', 'active'], poses, [], 'previous', () => 0)).toBe('active');
-  });
 });

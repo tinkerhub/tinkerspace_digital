@@ -54,28 +54,3 @@ export function getQueueDelay({ pose, poseStartedAt, poseEndsAt, now }) {
   const remainingCycle = pose.cycle - (elapsed % pose.cycle);
   return remainingCycle || pose.cycle;
 }
-
-/** Chooses an eligible pose while reducing immediate category and pose repeats. */
-export function chooseWeightedPose(candidates, poses, recentPoses, previousPose, random = Math.random) {
-  const previousCategory = poses[previousPose]?.category;
-  const weightedCandidates = candidates.map((pose) => {
-    const definition = poses[pose];
-    let weight = definition.weight ?? 1;
-
-    if (previousCategory && definition.category === previousCategory) weight *= 0.2;
-    if (recentPoses.includes(pose)) weight *= 0.35;
-    if (definition.avoidAfter?.includes(previousCategory)) weight *= 0.2;
-
-    return { pose, weight };
-  });
-  const totalWeight = weightedCandidates.reduce((total, candidate) => total + candidate.weight, 0);
-  let threshold = random() * totalWeight;
-
-  for (const candidate of weightedCandidates) {
-    threshold -= candidate.weight;
-    if (candidate.weight > 0 && threshold <= 0) return candidate.pose;
-  }
-
-  return weightedCandidates.find((candidate) => candidate.weight > 0)?.pose
-    || weightedCandidates[weightedCandidates.length - 1].pose;
-}

@@ -102,8 +102,10 @@ export function sanitizeEvents(events, now) {
     event
     && typeof event.type === 'string'
     && typeof event.dedupeKey === 'string'
-    && typeof event.createdAt === 'number'
-    && typeof event.expiresAt === 'number'
+    && Number.isFinite(event.createdAt)
+    && Number.isFinite(event.expiresAt)
+    && Number.isFinite(event.priority)
+    && typeof event.reactionPose === 'string'
     && event.expiresAt > now
     && POSES[event.reactionPose]
   ));
@@ -111,9 +113,10 @@ export function sanitizeEvents(events, now) {
 
 /** Computes priority with a bounded age bonus so older valid events are not starved. */
 export function getEffectiveEventPriority(event, now) {
+  const age = Math.max(0, now - event.createdAt);
   const ageBonus = Math.min(
     EVENT_POLICY.priorityAgingCap,
-    Math.floor((now - event.createdAt) / EVENT_POLICY.priorityAgingInterval),
+    Math.floor(age / EVENT_POLICY.priorityAgingInterval),
   );
   return event.priority + ageBonus;
 }

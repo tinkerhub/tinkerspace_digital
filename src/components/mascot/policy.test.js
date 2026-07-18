@@ -105,18 +105,26 @@ describe('mascot behaviour policy', () => {
     expect(eligible).toMatchObject({ pose: 'rain', reason: 'queued-event' });
   });
 
-  it('ages valid events and discards expired or unknown reactions', () => {
+  it('ages valid events and discards malformed or expired events', () => {
     const older = event({ createdAt: baseContext.now - 120000 });
     const stale = event({ dedupeKey: 'stale', expiresAt: baseContext.now - 1 });
     const malformed = event({ dedupeKey: 'bad', reactionPose: 'missing-pose' });
+    const invalidTiming = event({ dedupeKey: 'invalid-timing', createdAt: Number.NaN });
+    const invalidPriority = event({ dedupeKey: 'invalid-priority', priority: Number.POSITIVE_INFINITY });
     const decision = decideNextPose({
       ...baseContext,
-      pendingEvents: [stale, malformed, older],
+      pendingEvents: [stale, malformed, invalidTiming, invalidPriority, older],
     });
 
     expect(getEffectiveEventPriority(older, baseContext.now)).toBe(3);
     expect(decision).toMatchObject({ pose: 'dance', reason: 'queued-event' });
     expect(decision.queue).toEqual([]);
+  });
+
+  it('does not reduce event priority when its timestamp is in the future', () => {
+    const futureEvent = event({ createdAt: baseContext.now + 120000 });
+
+    expect(getEffectiveEventPriority(futureEvent, baseContext.now)).toBe(futureEvent.priority);
   });
 
   it('uses a safe fallback when the current pose is invalid', () => {

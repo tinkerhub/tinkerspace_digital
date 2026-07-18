@@ -20,9 +20,9 @@ The mascot is the existing hand-drawn maker avatar. Its personality is curious, 
 
 The mascot is not a page-change indicator. It is an ambient companion that occasionally does meaningful maker work.
 
-- On first appearance, the laptop sticker wakes: the mascot rolls its eyes and throws the TinkerHub label to its settled nearby position before entering the laptop-peek home state.
+- On first appearance, the laptop sticker wakes: the mascot rolls its eyes and throws the TinkerHub label to its settled nearby position before entering its configured home sequence. Events collected during awakening remain queued until that entry beat completes.
 - After two completed maker stories and at least one minute, it repeats the same return-to-sticker and label-throw beat. The shared sprite sheet owns the throw; the separate nearby wordmark appears only after that sheet has faded, then stays still. It never loops or circles around the mascot.
-- After a reset or sticker return, the mascot holds two or three irregular 35-90 second ambient turns before an autonomous maker story. Current home states are beanbag rest and laptop-peek; the sunglasses flourish is an occasional one-shot home beat rather than a loop.
+- After awakening, reset, or sticker return, the mascot holds two or three irregular 35-90 second ambient turns before an autonomous maker story. Current home states are beanbag rest and laptop-peek; the sunglasses flourish is an occasional one-shot home beat rather than a loop.
 - Ambient poses use small eye, blink, shoulder, and hand changes. The body should remain visually anchored so the character does not read as a sliding sticker.
 - Coding follows `debug` -> `breakthrough` -> `reset`.
 - Hardware follows `solder` -> `fix` -> `show` -> `reset`.
@@ -36,12 +36,14 @@ The mascot is not a page-change indicator. It is an ambient companion that occas
 The playback executor is event-aware without being event-driven in a robotic sense.
 
 - Page changes only influence the next autonomous work choice. They do not replace the active sprite.
-- Maker joins and weather changes enter a deduplicated priority queue and begin at a frame-cycle boundary.
+- Maker joins and weather changes enter a deduplicated semantic-event queue and begin at a frame-cycle boundary.
 - One-shot action sheets, including soldering, dance, and reset, play once and hold their final frame for a short randomized recovery pause before advancing. Queued events do not interrupt that recovery.
 - The sunglasses flourish uses the same one-shot policy, with a randomized 1.8-3.6 second recovery hold before returning to a normal home pose.
-- High-salience movement has a randomized 45-60 second attention cooldown. Weather reactions have a 15-minute cooldown.
+- High-salience community events have a randomized 45-60 second attention cooldown. Required story payoffs can finish their configured path and then start that cooldown. Weather reactions have a 15-minute cooldown.
 - Ambient selection is weighted rather than fixed. It favors the laptop-peek state, penalizes the three most recent poses, penalizes consecutive category repeats, and makes rest after recovery unlikely rather than impossible.
-- Weather and maker events wait for the current configured story or standalone path to finish, then enter through its recovery or home bridge.
+- Weather and maker events wait for the current configured story or standalone path to finish, then enter through its recovery or home bridge. A valid event blocked only by cooldown keeps the mascot in low-salience home behavior rather than allowing a new maker story to make that event stale.
+- Events use semantic identities, timestamps, expiry, and bounded priority aging. A newer event with the same dedupe key replaces its stale predecessor; an expired event is discarded.
+- Every pose uses one canonical scheduled-duration rule for normal entry and visibility resume.
 - Sprite changes crossfade for 380 ms at safe boundaries.
 
 This creates controlled variation: enough novelty to appear alive over a kiosk session, without the visual noise of random, unrelated pose changes.
@@ -74,8 +76,10 @@ Priority selector
   2. Continue the active causal maker story
   3. Play the highest-priority eligible queued event
   4. Return to sticker when its story-count and cooldown guards pass
-  5. Select a valid home beat
-  6. Select a valid new maker story
+  5. Enter the configured home sequence
+  6. Stay in home behavior while a valid event is cooldown-blocked
+  7. Continue the configured home sequence
+  8. Select a valid new maker story
 ```
 
 ### Context Blackboard
@@ -83,11 +87,11 @@ Priority selector
 The policy receives a compact immutable context for each decision:
 
 - `lastPose` and the current home-beat count.
-- `pendingEvents`, deduplicated by type and ordered by priority; app effects apply weather cooldowns before queueing.
+- `pendingEvents`, each with `type`, `reactionPose`, `dedupeKey`, `priority`, `createdAt`, `expiresAt`, and cooldown class.
 - Current display view as a soft bias; the calendar view increases the weight of the coding story and other views are neutral.
 - Recent poses, completed story domain, and completed story count.
 - A bounded session-exposure history that records the last twelve selected beats, so a pose or category that has dominated the session is gradually deprioritized without being permanently excluded.
-- Salient-motion and sticker-return cooldown deadlines.
+- Salient-motion, weather-reaction, and sticker-return cooldown deadlines.
 
 No policy branch reads browser state directly. App effects convert live maker, weather, and view changes into normalized context; the playback executor separately owns animation deadlines and visibility cleanup.
 
@@ -95,11 +99,11 @@ No policy branch reads browser state directly. App effects convert live maker, w
 
 The runtime separates visual assets from policy meaning:
 
-- The **asset manifest** is the single registry for sprite path, playback contract, visual category, energy level, standalone transitions, and complete maker-story definitions.
+- The **asset manifest** is the single registry for sprite path, playback contract, visual category, energy level, standalone transitions, complete maker-story definitions, and event definitions.
 - The **policy tree** evaluates priority, eligibility, and transitions using manifest IDs. It never references sprite file paths.
 - The **playback executor** resolves a selected manifest ID into the existing CSS/WebP sprite behavior.
 
-A manifest entry declares visual playback and story membership, but not global priority. For example, a prototype-testing pose can join the `hardware` story and inherit its causal sequencing. The policy decides whether a story, home beat, or queued event is eligible. This prevents individual assets from accumulating conflicting global rules.
+A manifest entry declares visual playback and story membership, but not global priority. For example, a prototype-testing pose can join the `hardware` story and inherit its causal sequencing. The policy decides whether a story, home beat, or queued event is eligible, and returns semantic effects such as `storyCompleted` rather than inferring completion from adjacent sprites. This prevents individual assets from accumulating conflicting global rules.
 
 ```js
 prototypeTest: {
@@ -114,8 +118,8 @@ To add a new animation, a developer should:
 
 1. Add the optimized WebP sprite under `public/images/mascot/dont-look/sprites/`.
 2. Register one manifest entry with the asset's visual and playback facts.
-3. Add the manifest ID to a `STORIES` path or the `homeBeat` selector. Weather reactions also require an explicit entry in the weather-pose mapping and event priority map.
-4. Add tests that prove the new candidate cannot bypass cooldown, story, or interruption rules.
+3. Add the manifest ID to a `STORIES` path or the `homeBeat` selector. Event reactions also require an explicit entry in `EVENT_DEFINITIONS` and the weather-pose mapping where applicable.
+4. Add tests that prove the new candidate cannot bypass cooldown, story, expiry, or interruption rules.
 
 The developer should not add timing logic, direct page checks, or global priority conditions to the asset definition.
 
@@ -131,8 +135,8 @@ The developer should not add timing logic, direct page checks, or global priorit
 
 | Signal | Policy effect | Safe release point |
 | --- | --- | --- |
-| Maker count increases | Queue one `dance` community event. | After the active maker story or recovery beat. |
-| Weather becomes rainy, hot, or cold | Queue the matching weather reaction if its cooldown has expired. | After the active maker story or recovery beat. |
+| Maker count increases | Queue one `maker-join` event with the `dance` reaction. | After the active maker story or recovery beat; expires if stale. |
+| Weather becomes rainy, hot, or cold | Queue or replace the current `weather` event with the matching reaction. | After the active maker story or recovery beat; policy enforces weather cooldown. |
 | Calendar or maker-feed context changes | Bias the next autonomous maker story. | Never interrupts the current pose. |
 | Two completed maker stories | Make a sticker-return sequence eligible. | After reset and its cooldown. |
 | No eligible event | Select a low-amplitude home beat or a new story. | At the next policy decision. |
@@ -142,7 +146,9 @@ The developer should not add timing logic, direct page checks, or global priorit
 - Coding remains `debug` -> `breakthrough` -> `reset`.
 - Hardware remains `solder` -> `fix` -> `show` -> `reset`.
 - A coding story and a hardware story never cut directly into one another; reset, weather, or a community beat bridges them.
-- High-salience poses obey the attention cooldown even when queued. Events remain pending instead of being discarded.
+- High-salience community events obey the attention cooldown. Required story payoffs are explicitly allowed to complete their causal path, then start the cooldown.
+- A cooldown-blocked event prevents a new maker story from beginning. The policy selects a low-salience home beat until the event plays or expires.
+- Expired or malformed events are removed before selection; unknown current pose IDs fall back safely to `ambientPeek`.
 - One-shot poses complete their frame cycle and recovery hold before a queued event is considered.
 - Home selection is weighted only after eligibility filtering. It excludes impossible candidates, strongly penalizes recent poses and category repeats, and makes recovery-to-rest uncommon rather than prohibited.
 - Session exposure applies a softer, longer-horizon penalty than recent-pose exclusion. It makes the policy explore compatible alternatives over time while retaining familiar low-salience home behavior.

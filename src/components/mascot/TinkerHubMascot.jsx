@@ -1,18 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getCurrentWeather } from '../../utils/api/weatherService';
 import {
-  enqueuePose,
+  enqueueEvent,
   getPlayback,
-  getPoseDuration,
   getQueueDelay,
+  getScheduledPoseDuration,
 } from './playback';
-import { PLAYBACK_DURATIONS, POLICY_LIMITS, POSE_EVENT_PRIORITY, POSES } from './manifest';
-import { decideNextPose, getMakerDomain, getWeatherPose } from './policy';
+import {
+  EVENT_DEFINITIONS,
+  PLAYBACK_DURATIONS,
+  POLICY_LIMITS,
+  POSES,
+} from './manifest';
+import { decideNextPose, getWeatherPose } from './policy';
 
 const FADE_MS = 380;
 const PUBLIC_ASSET_BASE = process.env.PUBLIC_URL === '.' ? '' : process.env.PUBLIC_URL;
-const AWAKENING_DURATION_MS = POSES.awakening.cycle * getPlayback(POSES.awakening).cycles;
-const RETURNING_DURATION_MS = POSES.returning.cycle * getPlayback(POSES.returning).cycles;
 
 function randomDuration(min, max) {
   return min + Math.round(Math.random() * (max - min));
@@ -52,7 +55,7 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     schedulerTimer.current = window.setTimeout(() => advanceRef.current?.(), delay);
   }, []);
 
-  const selectNextPose = useCallback(() => {
+  const selectNextPose = useCallback((preferHomeEntry = false) => {
     const decision = decideNextPose({
       now: Date.now(),
       pendingEvents: pendingPoses.current,
@@ -64,8 +67,10 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       completedWorkStories: completedWorkStories.current,
       lastStickerReturnAt: lastStickerReturnAt.current,
       nextSalientAt: nextSalientAt.current,
+      lastWeatherReactionAt: lastWeatherReactionAt.current,
       homeTurns: homeTurns.current,
       homeTurnTarget: homeTurnTarget.current,
+      preferHomeEntry,
     });
 
     pendingPoses.current = decision.queue;
@@ -73,21 +78,26 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       homeTurns.current = decision.home.turns;
       homeTurnTarget.current = decision.home.target;
     }
-    return decision.pose;
+    return decision;
   }, []);
 
-  const transitionTo = useCallback((nextPose) => {
+  const transitionTo = useCallback((decision) => {
+    const { pose: nextPose, effects } = decision;
     const currentPose = activePoseRef.current;
-    const currentDomain = getMakerDomain(currentPose);
 
     if (nextPose === 'returning') {
       window.clearTimeout(wordmarkTimer.current);
       setWordmarkVisible(false);
     }
 
-    if (nextPose === 'reset' && currentDomain !== 'neutral') {
-      lastCompletedWorkDomain.current = currentDomain;
+    if (effects?.storyCompleted) {
+      lastCompletedWorkDomain.current = effects.storyCompleted;
       completedWorkStories.current += 1;
+    }
+    if (effects?.eventPlayed?.type === 'weather') lastWeatherReactionAt.current = Date.now();
+    if (effects?.stickerReturned) {
+      lastStickerReturnAt.current = Date.now();
+      completedWorkStories.current = 0;
     }
 
     if (nextPose !== currentPose) {
@@ -111,24 +121,11 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
         POLICY_LIMITS.salientCooldown.max,
       );
     }
-    if (POSES[nextPose].kind === 'weather') lastWeatherReactionAt.current = Date.now();
     recentPoses.current = [...recentPoses.current, nextPose].slice(-POLICY_LIMITS.recentPoseLimit);
     sessionHistory.current = [...sessionHistory.current, nextPose]
       .slice(-POLICY_LIMITS.sessionExposureLimit);
-    if (nextPose === 'returning') {
-      lastStickerReturnAt.current = Date.now();
-      completedWorkStories.current = 0;
-      scheduleNext(RETURNING_DURATION_MS);
-      return;
-    }
-    if (POSES[nextPose].kind === 'ambient') {
-      scheduleNext(randomDuration(POLICY_LIMITS.homeHold.min, POLICY_LIMITS.homeHold.max));
-      return;
-    }
-
-    scheduleNext(getPoseDuration(
+    scheduleNext(getScheduledPoseDuration(
       POSES[nextPose],
-      isHighEnergy,
       PLAYBACK_DURATIONS,
       randomDuration,
     ));
@@ -138,11 +135,10 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     advanceRef.current = () => transitionTo(selectNextPose());
   }, [selectNextPose, transitionTo]);
 
-  const queuePoseAtLoopBoundary = useCallback((pose) => {
-    pendingPoses.current = enqueuePose(
+  const queueEventAtLoopBoundary = useCallback((event) => {
+    pendingPoses.current = enqueueEvent(
       pendingPoses.current,
-      pose,
-      POSE_EVENT_PRIORITY[pose] || 0,
+      event,
     );
 
     // Let the intro and later return-to-sticker beat finish before outside events can interrupt them.
@@ -189,20 +185,31 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     if (
       nextWeatherPose
       && nextWeatherPose !== weatherPoseRef.current
-      && Date.now() - lastWeatherReactionAt.current >= POLICY_LIMITS.weatherCooldown
     ) {
-      queuePoseAtLoopBoundary(nextWeatherPose);
+      const now = Date.now();
+      queueEventAtLoopBoundary({
+        ...EVENT_DEFINITIONS.weather,
+        reactionPose: nextWeatherPose,
+        createdAt: now,
+        expiresAt: now + EVENT_DEFINITIONS.weather.expiresAfter,
+      });
       weatherPoseRef.current = nextWeatherPose;
     }
     if (!nextWeatherPose) weatherPoseRef.current = null;
-  }, [weather, isVisible, queuePoseAtLoopBoundary]);
+  }, [weather, isVisible, queueEventAtLoopBoundary]);
 
   useEffect(() => {
     if (previousMakerCount.current !== null && makerCount > previousMakerCount.current) {
-      queuePoseAtLoopBoundary('dance');
+      const now = Date.now();
+      queueEventAtLoopBoundary({
+        ...EVENT_DEFINITIONS.makerJoin,
+        createdAt: now,
+        expiresAt: now + EVENT_DEFINITIONS.makerJoin.expiresAfter,
+        payload: { count: makerCount - previousMakerCount.current },
+      });
     }
     previousMakerCount.current = makerCount;
-  }, [makerCount, queuePoseAtLoopBoundary]);
+  }, [makerCount, queueEventAtLoopBoundary]);
 
   useEffect(() => {
     if (!isVisible) return undefined;
@@ -210,8 +217,8 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     if (!hasAwakenedRef.current) {
       awakeningTimer.current = window.setTimeout(() => {
         hasAwakenedRef.current = true;
-        transitionTo('ambientPeek');
-      }, AWAKENING_DURATION_MS);
+        transitionTo(selectNextPose(true));
+      }, getScheduledPoseDuration(POSES.awakening, PLAYBACK_DURATIONS, randomDuration));
 
       return () => {
         window.clearTimeout(awakeningTimer.current);
@@ -225,26 +232,18 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     const currentPose = activePoseRef.current;
     if (currentPose !== 'returning') setWordmarkVisible(true);
 
-    if (currentPose === 'returning') {
-      scheduleNext(RETURNING_DURATION_MS);
-    } else if (POSES[currentPose].kind === 'ambient') {
-      scheduleNext(randomDuration(PLAYBACK_DURATIONS.ambient.min, PLAYBACK_DURATIONS.ambient.max));
-    } else {
-      const isHighEnergy = POSES[currentPose].energy === 'high';
-      scheduleNext(getPoseDuration(
-        POSES[currentPose],
-        isHighEnergy,
-        PLAYBACK_DURATIONS,
-        randomDuration,
-      ));
-    }
+    scheduleNext(getScheduledPoseDuration(
+      POSES[currentPose],
+      PLAYBACK_DURATIONS,
+      randomDuration,
+    ));
     return () => {
       window.clearTimeout(schedulerTimer.current);
       window.clearTimeout(fadeTimer.current);
       window.clearTimeout(wordmarkTimer.current);
       setPreviousPose(null);
     };
-  }, [isVisible, scheduleNext, transitionTo]);
+  }, [isVisible, scheduleNext, selectNextPose, transitionTo]);
 
   if (!isVisible) return null;
 

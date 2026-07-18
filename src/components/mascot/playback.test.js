@@ -1,12 +1,17 @@
 import {
-  enqueuePose,
-  getPoseDuration,
+  enqueueEvent,
   getQueueDelay,
-  takeEligiblePose,
+  getScheduledPoseDuration,
 } from './playback';
 
 const loopingPose = { cycle: 1000 };
+const ambientPose = { cycle: 1000, kind: 'ambient' };
 const oneShotPose = { cycle: 1000, playback: { cycles: 1, hold: { min: 200, max: 400 } } };
+const durations = {
+  ambient: { min: 20000, max: 45000 },
+  home: { min: 35000, max: 90000 },
+  pulse: { min: 2100, max: 4200 },
+};
 
 describe('mascot playback helpers', () => {
   it('keeps a one-shot recovery hold intact for queued events', () => {
@@ -27,24 +32,17 @@ describe('mascot playback helpers', () => {
     })).toBe(350);
   });
 
-  it('deduplicates events and preserves priority', () => {
-    const queued = enqueuePose([], 'dance', 1);
-    const prioritised = enqueuePose(queued, 'rain', 2);
-    const deduplicated = enqueuePose(prioritised, 'dance', 1);
-
-    expect(deduplicated.map((event) => event.pose)).toEqual(['rain', 'dance']);
+  it('uses one duration definition for normal and resumed ambient playback', () => {
+    expect(getScheduledPoseDuration(ambientPose, durations, () => 42000)).toBe(42000);
+    expect(getScheduledPoseDuration(oneShotPose, durations, () => 300)).toBe(1300);
   });
 
-  it('keeps ineligible events queued until their cooldown ends', () => {
-    const queued = [{ pose: 'rain', priority: 2 }, { pose: 'dance', priority: 1 }];
-    const selection = takeEligiblePose(queued, (pose) => pose === 'rain');
+  it('deduplicates by semantic event key instead of reaction pose', () => {
+    const makerJoin = { type: 'maker-join', dedupeKey: 'maker-join', reactionPose: 'dance' };
+    const launchComplete = { type: 'launch-complete', dedupeKey: 'launch-complete', reactionPose: 'dance' };
+    const latestMakerJoin = { ...makerJoin, payload: { count: 3 } };
 
-    expect(selection.pose).toBe('rain');
-    expect(selection.queue).toEqual([{ pose: 'dance', priority: 1 }]);
+    const queue = enqueueEvent(enqueueEvent([], makerJoin), launchComplete);
+    expect(enqueueEvent(queue, latestMakerJoin)).toEqual([launchComplete, latestMakerJoin]);
   });
-
-  it('includes a randomized recovery hold in one-shot duration', () => {
-    expect(getPoseDuration(oneShotPose, false, {}, () => 300)).toBe(1300);
-  });
-
 });

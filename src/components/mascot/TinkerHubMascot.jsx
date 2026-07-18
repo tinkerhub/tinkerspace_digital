@@ -10,6 +10,7 @@ import { PLAYBACK_DURATIONS, POLICY_LIMITS, POSE_EVENT_PRIORITY, POSES } from '.
 import { decideNextPose, getMakerDomain, getWeatherPose } from './policy';
 
 const FADE_MS = 380;
+const PUBLIC_ASSET_BASE = process.env.PUBLIC_URL === '.' ? '' : process.env.PUBLIC_URL;
 const AWAKENING_DURATION_MS = POSES.awakening.cycle * getPlayback(POSES.awakening).cycles;
 const RETURNING_DURATION_MS = POSES.returning.cycle * getPlayback(POSES.returning).cycles;
 
@@ -257,7 +258,7 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
         role={className === 'tinkerhub-mascot__sprite--active' ? 'img' : undefined}
         aria-label={className === 'tinkerhub-mascot__sprite--active' ? POSES[pose].label : undefined}
         style={{
-          '--mascot-sprite': `url(${process.env.PUBLIC_URL}${POSES[pose].image})`,
+          '--mascot-sprite': `url(${PUBLIC_ASSET_BASE}${POSES[pose].image})`,
           '--mascot-cycle': `${POSES[pose].cycle}ms`,
           '--mascot-sprite-iterations': Number.isFinite(playback.cycles) ? playback.cycles : 'infinite',
         }}

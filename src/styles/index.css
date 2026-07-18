@@ -30,6 +30,91 @@
   100% { opacity: 1; transform: scale(1.05); }
 }
 
+.tinkerhub-mascot {
+  width: clamp(8rem, 13vw, 12rem);
+  aspect-ratio: 1;
+  position: relative;
+  transform-origin: bottom right;
+}
+
+.tinkerhub-mascot__sprite {
+  position: absolute;
+  inset: 0;
+  background-image: var(--mascot-sprite);
+  background-repeat: no-repeat;
+  background-size: 200% 200%;
+  animation: mascot-sprite var(--mascot-cycle) steps(1, end) infinite;
+  animation-iteration-count: var(--mascot-sprite-iterations);
+  animation-fill-mode: forwards;
+}
+
+.tinkerhub-mascot__sprite--active {
+  animation-name: mascot-sprite, mascot-fade-in;
+  animation-duration: var(--mascot-cycle), 380ms;
+  animation-timing-function: steps(1, end), ease-out;
+  animation-iteration-count: var(--mascot-sprite-iterations), 1;
+  animation-fill-mode: forwards, both;
+}
+
+.tinkerhub-mascot__sprite--leaving {
+  animation-name: mascot-sprite, mascot-fade-out;
+  animation-duration: var(--mascot-cycle), 380ms;
+  animation-timing-function: steps(1, end), ease-in;
+  animation-iteration-count: infinite, 1;
+  animation-fill-mode: forwards, both;
+}
+
+.tinkerhub-mascot__wordmark {
+  position: absolute;
+  right: -0.45rem;
+  bottom: 0.2rem;
+  z-index: 2;
+  padding: 0.08rem 0.32rem;
+  border: 2px solid #050505;
+  border-radius: 0.3rem;
+  background: #fff;
+  color: #050505;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(0.5rem, 0.9vw, 0.7rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  transform: rotate(6deg);
+}
+
+@keyframes mascot-sprite {
+  0%, 24.99% { background-position: 0 0; }
+  25%, 49.99% { background-position: 100% 0; }
+  50%, 74.99% { background-position: 0 100%; }
+  75%, 100% { background-position: 100% 100%; }
+}
+
+@keyframes mascot-fade-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes mascot-fade-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-2px) scale(1.01); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tinkerhub-mascot__sprite,
+  .tinkerhub-mascot__sprite--active,
+  .tinkerhub-mascot__sprite--leaving {
+    animation: none;
+  }
+
+  .tinkerhub-mascot__sprite--leaving {
+    display: none;
+  }
+
+  .tinkerhub-mascot__wordmark {
+    animation: none;
+  }
+}
+
 @keyframes nameScroll {
     0% { transform: translateX(0); }
     40% { transform: translateX(-40px); }

@@ -72,15 +72,15 @@ const CalendarDashboard = () => {
 
   // ── Derived values (memoised) ──────────────────────────────────
   const currentDate = useMemo(() => {
-    if (data?.generated_at) {
+    if (data && data.generated_at) {
       return new Date(data.generated_at);
     }
     return new Date();
-  }, [data?.generated_at]);
+  }, [data && data.generated_at]);
 
-  const calendarEvents = useMemo(() => data?.calendar ?? [], [data?.calendar]);
-  const liveEvent = useMemo(() => data?.live_event ?? null, [data?.live_event]);
-  const upcomingEvents = useMemo(() => data?.upcoming_events ?? [], [data?.upcoming_events]);
+  const calendarEvents = useMemo(() => (data && data.calendar != null) ? data.calendar : [], [data && data.calendar]);
+  const liveEvent = useMemo(() => (data && data.live_event != null) ? data.live_event : null, [data && data.live_event]);
+  const upcomingEvents = useMemo(() => (data && data.upcoming_events != null) ? data.upcoming_events : [], [data && data.upcoming_events]);
 
   // ── Render: initial loading state ──────────────────────────────
   if (isInitialLoad) {

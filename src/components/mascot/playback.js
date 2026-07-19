@@ -10,8 +10,8 @@ export function isOneShotPose(pose) {
   return Number.isFinite(getPlayback(pose).cycles);
 }
 
-/** Calculates the delay before the scheduler can advance a pose. */
-export function getPoseDuration(pose, isHighEnergy, durations, randomDuration) {
+/** Calculates the canonical delay before the policy can select another pose. */
+export function getScheduledPoseDuration(pose, durations, randomDuration) {
   const playback = getPlayback(pose);
   if (Number.isFinite(playback.cycles)) {
     const hold = playback.hold
@@ -20,28 +20,17 @@ export function getPoseDuration(pose, isHighEnergy, durations, randomDuration) {
     return pose.cycle * playback.cycles + hold;
   }
 
-  return isHighEnergy
+  return pose.kind === 'ambient'
+    ? randomDuration(durations.home.min, durations.home.max)
+    : pose.energy === 'high'
     ? randomDuration(durations.pulse.min, durations.pulse.max)
     : randomDuration(durations.ambient.min, durations.ambient.max);
 }
 
-/** Adds a pose once and orders queued events by descending priority. */
-export function enqueuePose(queue, pose, priority) {
-  if (queue.some((event) => event.pose === pose)) return queue;
-
-  return [...queue, { pose, priority }]
-    .sort((left, right) => right.priority - left.priority);
-}
-
-/** Removes and returns the first queued pose that is currently eligible. */
-export function takeEligiblePose(queue, isEligible) {
-  const index = queue.findIndex(({ pose }) => isEligible(pose));
-  if (index === -1) return { pose: null, queue };
-
-  return {
-    pose: queue[index].pose,
-    queue: [...queue.slice(0, index), ...queue.slice(index + 1)],
-  };
+/** Replaces stale events with the latest event for each semantic dedupe key. */
+export function enqueueEvent(queue, event) {
+  const withoutDuplicate = queue.filter((queued) => queued.dedupeKey !== event.dedupeKey);
+  return [...withoutDuplicate, event];
 }
 
 /** Waits for a one-shot to complete or a looping pose to reach its next boundary. */

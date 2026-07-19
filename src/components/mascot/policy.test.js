@@ -1,13 +1,13 @@
 import {
   chooseMakerStory,
-  decideNextPose,
   choosePolicyPose,
-  getPoseContinuation,
+  decideNextPose,
+  getEffectiveEventPriority,
   getWeatherPose,
 } from './policy';
 
 const baseContext = {
-  now: 100000,
+  now: 1000000,
   pendingEvents: [],
   lastPose: 'ambientPeek',
   recentPoses: [],
@@ -17,9 +17,23 @@ const baseContext = {
   completedWorkStories: 0,
   lastStickerReturnAt: 0,
   nextSalientAt: 0,
+  lastWeatherReactionAt: -1000000,
   homeTurns: 0,
   homeTurnTarget: 0,
 };
+
+function event(overrides) {
+  return {
+    type: 'maker-join',
+    dedupeKey: 'maker-join',
+    reactionPose: 'dance',
+    priority: 1,
+    cooldown: 'salient',
+    createdAt: baseContext.now,
+    expiresAt: baseContext.now + 120000,
+    ...overrides,
+  };
+}
 
 describe('mascot behaviour policy', () => {
   it('maps weather inputs to one meaningful reaction', () => {
@@ -28,83 +42,108 @@ describe('mascot behaviour policy', () => {
     expect(getWeatherPose({ temperature: 22 })).toBe('winter');
   });
 
-  it('continues a causal maker story before choosing another behavior', () => {
-    const decision = decideNextPose({ ...baseContext, lastPose: 'debug' });
-
-    expect(decision).toMatchObject({ pose: 'breakthrough', reason: 'continue-path' });
-  });
-
-  it('uses manifest transitions for standalone beats', () => {
-    expect(getPoseContinuation('dance')).toBe('reset');
-  });
-
-  it('defers a high-energy event until its cooldown ends', () => {
+  it('enters a configured two-or-three-turn home sequence after awakening', () => {
     const decision = decideNextPose({
       ...baseContext,
-      pendingEvents: [{ pose: 'dance', priority: 1 }],
-      nextSalientAt: baseContext.now + 1000,
-    });
+      lastPose: 'awakening',
+      preferHomeEntry: true,
+      pendingEvents: [event({ type: 'weather', dedupeKey: 'weather', reactionPose: 'rain', priority: 2 })],
+    }, () => 0);
 
-    expect(decision.pose).not.toBe('dance');
-    expect(decision.queue).toEqual([{ pose: 'dance', priority: 1 }]);
+    expect(decision.reason).toBe('home-entry');
+    expect(decision.home).toEqual({ turns: 1, target: 2 });
   });
 
-  it('finishes a configured story before releasing a queued event', () => {
-    const debugDecision = decideNextPose({
-      ...baseContext,
-      lastPose: 'debug',
-      pendingEvents: [{ pose: 'rain', priority: 2 }],
-    });
-    const breakthroughDecision = decideNextPose({
-      ...baseContext,
-      lastPose: 'breakthrough',
-      pendingEvents: [{ pose: 'rain', priority: 2 }],
-    });
-    const resetDecision = decideNextPose({
-      ...baseContext,
-      lastPose: 'reset',
-      pendingEvents: [{ pose: 'rain', priority: 2 }],
-    });
+  it('continues a causal story and declares completion as an effect', () => {
+    const debug = decideNextPose({ ...baseContext, lastPose: 'debug' });
+    const breakthrough = decideNextPose({ ...baseContext, lastPose: 'breakthrough' });
 
-    expect(debugDecision).toMatchObject({ pose: 'breakthrough', reason: 'continue-path' });
-    expect(breakthroughDecision).toMatchObject({ pose: 'reset', reason: 'continue-path' });
-    expect(resetDecision).toMatchObject({ pose: 'rain', reason: 'queued-event' });
+    expect(debug).toMatchObject({ pose: 'breakthrough', reason: 'continue-path' });
+    expect(breakthrough).toMatchObject({
+      pose: 'reset',
+      effects: { storyCompleted: 'coder' },
+    });
   });
 
-  it('returns to the sticker after the configured number of completed stories', () => {
+  it('holds a blocked celebration in low-salience home behavior', () => {
     const decision = decideNextPose({
       ...baseContext,
-      lastPose: 'reset',
-      completedWorkStories: 2,
-    });
-
-    expect(decision).toMatchObject({ pose: 'returning', reason: 'sticker-return' });
-  });
-
-  it('alternates a new maker story after hardware work', () => {
-    const decision = decideNextPose({
-      ...baseContext,
-      lastPose: 'ambientPeek',
+      pendingEvents: [event()],
+      nextSalientAt: baseContext.now + 5000,
       homeTurns: 2,
       homeTurnTarget: 2,
-      lastCompletedWorkDomain: 'hardware',
     });
 
-    expect(decision).toMatchObject({ pose: 'debug', reason: 'new-maker-story' });
+    expect(decision).toMatchObject({ reason: 'await-event' });
+    expect(decision.pose).not.toBe('debug');
+    expect(decision.queue).toEqual([event()]);
   });
 
-  it('discovers alternate maker stories from the manifest', () => {
+  it('applies weather cooldown inside the policy', () => {
+    const weatherEvent = event({
+      type: 'weather',
+      dedupeKey: 'weather',
+      reactionPose: 'rain',
+      priority: 2,
+      cooldown: 'weather',
+    });
+    const blocked = decideNextPose({
+      ...baseContext,
+      pendingEvents: [weatherEvent],
+      lastWeatherReactionAt: baseContext.now - 1000,
+      homeTurns: 2,
+      homeTurnTarget: 2,
+    });
+    const eligible = decideNextPose({
+      ...baseContext,
+      pendingEvents: [weatherEvent],
+      homeTurns: 2,
+      homeTurnTarget: 2,
+    });
+
+    expect(blocked.reason).toBe('await-event');
+    expect(eligible).toMatchObject({ pose: 'rain', reason: 'queued-event' });
+  });
+
+  it('ages valid events and discards malformed or expired events', () => {
+    const older = event({ createdAt: baseContext.now - 120000 });
+    const stale = event({ dedupeKey: 'stale', expiresAt: baseContext.now - 1 });
+    const malformed = event({ dedupeKey: 'bad', reactionPose: 'missing-pose' });
+    const invalidTiming = event({ dedupeKey: 'invalid-timing', createdAt: Number.NaN });
+    const invalidPriority = event({ dedupeKey: 'invalid-priority', priority: Number.POSITIVE_INFINITY });
+    const invalidCooldown = event({ dedupeKey: 'invalid-cooldown', cooldown: 'unknown' });
+    const decision = decideNextPose({
+      ...baseContext,
+      pendingEvents: [stale, malformed, invalidTiming, invalidPriority, invalidCooldown, older],
+    });
+
+    expect(getEffectiveEventPriority(older, baseContext.now)).toBe(3);
+    expect(decision).toMatchObject({ pose: 'dance', reason: 'queued-event' });
+    expect(decision.queue).toEqual([]);
+  });
+
+  it('does not reduce event priority when its timestamp is in the future', () => {
+    const futureEvent = event({ createdAt: baseContext.now + 120000 });
+
+    expect(getEffectiveEventPriority(futureEvent, baseContext.now)).toBe(futureEvent.priority);
+  });
+
+  it('uses a safe fallback when the current pose is invalid', () => {
+    const decision = decideNextPose({ ...baseContext, lastPose: 'invalid-pose' }, () => 0);
+
+    expect(decision).toMatchObject({ pose: 'ambientPeek', reason: 'fallback' });
+  });
+
+  it('alternates new maker stories and reduces repeated session exposure', () => {
     expect(chooseMakerStory({ ...baseContext, lastCompletedWorkDomain: 'hardware' }, () => 0))
       .toBe('coding');
-  });
 
-  it('reduces a pose weight after repeated session exposure', () => {
     const context = {
       ...baseContext,
       lastPose: 'reset',
       sessionHistory: ['ambientPeek', 'ambientPeek', 'ambientPeek', 'ambientPeek'],
     };
-
-    expect(choosePolicyPose(['ambientPeek', 'ambientGlance'], context, () => 0.9)).toBe('ambientGlance');
+    expect(choosePolicyPose(['ambientPeek', 'ambientGlance'], context, () => 0.9))
+      .toBe('ambientGlance');
   });
 });

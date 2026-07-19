@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchData } from './utils/api/fetchData';
 import { removeDuplicates } from './utils/helpers/removeDuplicates';
+import { getMakerCardsPerPage } from './utils/layout/makerGrid';
 import DISPLAY_CONFIG from './utils/constants/displayConfig';
 import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
 import useGridLayout from './hooks/useGridLayout';
@@ -27,7 +28,7 @@ function App() {
 
     // Calculate layout here to determine totalPages for orchestrator
     const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
-    const cardsPerPage = cols * rows;
+    const cardsPerPage = getMakerCardsPerPage(cols, rows);
     const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
 
     // ── Display Orchestration Engine ─────────────────────────────

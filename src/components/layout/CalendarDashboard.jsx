@@ -71,16 +71,21 @@ const CalendarDashboard = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Derived values (memoised) ──────────────────────────────────
-  const currentDate = useMemo(() => {
-    if (data?.generated_at) {
-      return new Date(data.generated_at);
+  var generatedAt = data && data.generated_at;
+  var calendar = data && data.calendar;
+  var liveEventRaw = data && data.live_event;
+  var upcomingRaw = data && data.upcoming_events;
+
+  var currentDate = useMemo(function () {
+    if (generatedAt) {
+      return new Date(generatedAt);
     }
     return new Date();
-  }, [data?.generated_at]);
+  }, [generatedAt]);
 
-  const calendarEvents = useMemo(() => data?.calendar ?? [], [data?.calendar]);
-  const liveEvent = useMemo(() => data?.live_event ?? null, [data?.live_event]);
-  const upcomingEvents = useMemo(() => data?.upcoming_events ?? [], [data?.upcoming_events]);
+  var calendarEvents = useMemo(function () { return (calendar != null) ? calendar : []; }, [calendar]);
+  var liveEvent = useMemo(function () { return (liveEventRaw != null) ? liveEventRaw : null; }, [liveEventRaw]);
+  var upcomingEvents = useMemo(function () { return (upcomingRaw != null) ? upcomingRaw : []; }, [upcomingRaw]);
 
   // ── Render: initial loading state ──────────────────────────────
   if (isInitialLoad) {

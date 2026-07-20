@@ -10,15 +10,15 @@ export const FALLBACK_POSE = 'ambientPeek';
 
 /** Converts a weather payload into the matching mascot reaction pose. */
 export function getWeatherPose(weather) {
-  if (weather?.isRaining) return 'rain';
-  if (weather?.temperature >= 32) return 'hot';
-  if (weather?.temperature <= 24) return 'winter';
+  if (weather && weather.isRaining) return 'rain';
+  if (weather && weather.temperature >= 32) return 'hot';
+  if (weather && weather.temperature <= 24) return 'winter';
   return null;
 }
 
 /** Returns the next configured step of a causal story, including recovery. */
 export function getStoryContinuation(pose) {
-  const story = STORIES[POSES[pose]?.story];
+  const story = STORIES[POSES[pose] && POSES[pose].story];
   if (!story) return null;
 
   const index = story.steps.indexOf(pose);
@@ -28,7 +28,7 @@ export function getStoryContinuation(pose) {
 
 /** Returns a manifest-defined continuation for stories and standalone beats. */
 export function getPoseContinuation(pose) {
-  return getStoryContinuation(pose) || POSES[pose]?.next || null;
+  return getStoryContinuation(pose) || (POSES[pose] && POSES[pose].next) || null;
 }
 
 /** Counts bounded exposure history so selectors can avoid a visible playlist. */
@@ -41,15 +41,15 @@ export function getExposureCounts(history) {
 
 /** Selects a valid pose while balancing immediate recency and session exposure. */
 export function choosePolicyPose(candidates, context, random = Math.random) {
-  const previousCategory = POSES[context.lastPose]?.category;
+  const previousCategory = POSES[context.lastPose] && POSES[context.lastPose].category;
   const exposure = getExposureCounts(context.sessionHistory);
   const weightedCandidates = candidates.map((pose) => {
     const definition = POSES[pose];
-    let weight = definition.weight ?? 1;
+    let weight = definition.weight != null ? definition.weight : 1;
 
     if (previousCategory && definition.category === previousCategory) weight *= 0.2;
     if (context.recentPoses.includes(pose)) weight *= 0.35;
-    if (definition.avoidAfter?.includes(previousCategory)) weight *= 0.2;
+    if (definition.avoidAfter && definition.avoidAfter.includes(previousCategory)) weight *= 0.2;
     weight /= 1 + (exposure[pose] || 0) * 0.45;
 
     return { pose, weight };
@@ -62,8 +62,8 @@ export function choosePolicyPose(candidates, context, random = Math.random) {
     if (candidate.weight > 0 && threshold <= 0) return candidate.pose;
   }
 
-  return weightedCandidates.find((candidate) => candidate.weight > 0)?.pose
-    || FALLBACK_POSE;
+  var firstPositive = weightedCandidates.find(function (c) { return c.weight > 0; });
+  return (firstPositive && firstPositive.pose) || FALLBACK_POSE;
 }
 
 /** Selects a configured maker story without repeating the completed domain. */
@@ -73,14 +73,15 @@ export function chooseMakerStory(context, random = Math.random) {
   ));
   const eligibleStories = candidates.length ? candidates : POLICY_SELECTORS.makerStories;
   const storyExposure = context.sessionHistory.reduce((counts, pose) => {
-    const storyId = POSES[pose]?.story;
+    const storyId = POSES[pose] && POSES[pose].story;
     if (storyId) counts[storyId] = (counts[storyId] || 0) + 1;
     return counts;
   }, {});
   const weightedCandidates = eligibleStories.map((storyId) => {
     const story = STORIES[storyId];
-    let weight = story.weight ?? 1;
-    weight *= story.viewWeights?.[context.currentView] ?? 1;
+    let weight = story.weight != null ? story.weight : 1;
+    var vw = story.viewWeights;
+    weight *= (vw && vw[context.currentView] != null) ? vw[context.currentView] : 1;
     weight /= 1 + (storyExposure[storyId] || 0) * 0.45;
     return { storyId, weight };
   });
@@ -92,9 +93,11 @@ export function chooseMakerStory(context, random = Math.random) {
     if (candidate.weight > 0 && threshold <= 0) return candidate.storyId;
   }
 
-  return weightedCandidates.find((candidate) => candidate.weight > 0)?.storyId
-    || POLICY_SELECTORS.makerStories[0];
+  var firstPositiveStory = weightedCandidates.find(function (c) { return c.weight > 0; });
+  return (firstPositiveStory && firstPositiveStory.storyId) || POLICY_SELECTORS.makerStories[0];
 }
+
+const VALID_COOLDOWNS = ['salient', 'weather'];
 
 /** Rejects malformed or expired events before they reach the decision tree. */
 export function sanitizeEvents(events, now) {
@@ -106,7 +109,7 @@ export function sanitizeEvents(events, now) {
     && Number.isFinite(event.expiresAt)
     && Number.isFinite(event.priority)
     && typeof event.reactionPose === 'string'
-    && ['salient', 'weather'].includes(event.cooldown)
+    && VALID_COOLDOWNS.indexOf(event.cooldown) !== -1
     && event.expiresAt > now
     && POSES[event.reactionPose]
   ));
@@ -140,7 +143,7 @@ export function getQueuedEvents(context) {
 function homeDecision(context, random, reason, home) {
   return {
     pose: choosePolicyPose(POLICY_SELECTORS.homeBeat, context, random),
-    queue: getQueuedEvents(context),
+    queue: context.queuedEvents,
     reason,
     home,
   };
@@ -151,11 +154,11 @@ export function continueActivePath(context) {
   const continuation = getPoseContinuation(context.lastPose);
   if (!continuation) return null;
 
-  const story = STORIES[POSES[context.lastPose]?.story];
+  const story = STORIES[POSES[context.lastPose] && POSES[context.lastPose].story];
   const completesStory = story && continuation === story.recovery;
   return {
     pose: continuation,
-    queue: getQueuedEvents(context),
+    queue: context.queuedEvents,
     reason: 'continue-path',
     effects: completesStory ? { storyCompleted: story.domain } : undefined,
   };
@@ -165,7 +168,7 @@ export function continueActivePath(context) {
 export function playEligibleQueuedEvent(context) {
   if (context.preferHomeEntry) return null;
 
-  const queue = getQueuedEvents(context);
+  const queue = context.queuedEvents;
   const event = queue.find((candidate) => isEventEligible(candidate, context));
   if (!event) return null;
 
@@ -186,7 +189,7 @@ export function returnToSticker(context) {
 
   return {
     pose: 'returning',
-    queue: getQueuedEvents(context),
+    queue: context.queuedEvents,
     reason: 'sticker-return',
     effects: { stickerReturned: true },
   };
@@ -195,7 +198,7 @@ export function returnToSticker(context) {
 /** Branch 4: enter the configured home sequence after a home-transition pose. */
 export function enterHome(context, random) {
   const current = POSES[context.lastPose];
-  if (current?.transition !== 'home') return null;
+  if (!current || current.transition !== 'home') return null;
 
   return homeDecision(context, random, 'home-entry', {
     turns: 1,
@@ -205,7 +208,7 @@ export function enterHome(context, random) {
 
 /** Branch 5: stay low-salience while a valid event is waiting for its cooldown. */
 export function waitForBlockedEvent(context, random) {
-  const hasBlockedEvent = getQueuedEvents(context).some((event) => !isEventEligible(event, context));
+  const hasBlockedEvent = context.queuedEvents.some((event) => !isEventEligible(event, context));
   if (!hasBlockedEvent) return null;
 
   return homeDecision(context, random, 'await-event', {
@@ -217,7 +220,7 @@ export function waitForBlockedEvent(context, random) {
 /** Branch 6: continue the configured home sequence. */
 export function continueHome(context, random) {
   const current = POSES[context.lastPose];
-  if (current?.kind !== 'ambient' || context.homeTurns >= context.homeTurnTarget) return null;
+  if (!current || current.kind !== 'ambient' || context.homeTurns >= context.homeTurnTarget) return null;
 
   return homeDecision(context, random, 'home-continue', {
     turns: context.homeTurns + 1,
@@ -230,7 +233,7 @@ export function startMakerStory(context, random) {
   const storyId = chooseMakerStory(context, random);
   return {
     pose: STORIES[storyId].steps[0],
-    queue: getQueuedEvents(context),
+    queue: context.queuedEvents,
     reason: 'new-maker-story',
     home: { turns: 0, target: 0 },
   };
@@ -248,20 +251,21 @@ export const POLICY_BRANCHES = [
 
 /** Runs the event-bound priority policy and returns a pose plus semantic effects. */
 export function decideNextPose(context, random = Math.random) {
-  const queue = sanitizeEvents(context.pendingEvents, context.now);
+  var sortedQueue = getQueuedEvents(context);
   if (!POSES[context.lastPose]) {
-    return { pose: FALLBACK_POSE, queue, reason: 'fallback' };
+    return { pose: FALLBACK_POSE, queue: sortedQueue, reason: 'fallback' };
   }
 
-  const safeContext = {
+  var safeContext = {
     ...context,
-    pendingEvents: queue,
+    pendingEvents: sortedQueue,
+    queuedEvents: sortedQueue,
   };
 
-  for (const branch of POLICY_BRANCHES) {
-    const decision = branch(safeContext, random);
+  for (var i = 0; i < POLICY_BRANCHES.length; i++) {
+    var decision = POLICY_BRANCHES[i](safeContext, random);
     if (decision) return decision;
   }
 
-  return { pose: FALLBACK_POSE, queue: safeContext.pendingEvents, reason: 'fallback' };
+  return { pose: FALLBACK_POSE, queue: safeContext.queuedEvents, reason: 'fallback' };
 }

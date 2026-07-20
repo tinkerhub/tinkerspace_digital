@@ -52,7 +52,7 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
   const scheduleNext = useCallback((delay, trackPoseDeadline = true) => {
     window.clearTimeout(schedulerTimer.current);
     if (trackPoseDeadline) poseEndsAt.current = Date.now() + delay;
-    schedulerTimer.current = window.setTimeout(() => advanceRef.current?.(), delay);
+    schedulerTimer.current = window.setTimeout(() => { if (advanceRef.current) advanceRef.current(); }, delay);
   }, []);
 
   const selectNextPose = useCallback((preferHomeEntry = false) => {
@@ -90,12 +90,12 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       setWordmarkVisible(false);
     }
 
-    if (effects?.storyCompleted) {
+    if (effects && effects.storyCompleted) {
       lastCompletedWorkDomain.current = effects.storyCompleted;
       completedWorkStories.current += 1;
     }
-    if (effects?.eventPlayed?.type === 'weather') lastWeatherReactionAt.current = Date.now();
-    if (effects?.stickerReturned) {
+    if (effects && effects.eventPlayed && effects.eventPlayed.type === 'weather') lastWeatherReactionAt.current = Date.now();
+    if (effects && effects.stickerReturned) {
       lastStickerReturnAt.current = Date.now();
       completedWorkStories.current = 0;
     }
@@ -115,7 +115,7 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
     }
 
     const startsSalientCooldown = POSES[nextPose].salientRole === 'community-event'
-      || Boolean(effects?.storyCompleted);
+      || (effects && Boolean(effects.storyCompleted));
     if (startsSalientCooldown) {
       nextSalientAt.current = Date.now() + randomDuration(
         POLICY_LIMITS.salientCooldown.min,

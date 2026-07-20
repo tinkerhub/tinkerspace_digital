@@ -115,11 +115,11 @@ export const fetchCalendarDisplay = async () => {
 
     // ── Normalise & return ────────────────────────────────────
     return {
-      live_event: data.live_event ?? null,
+      live_event: data.live_event != null ? data.live_event : null,
       upcoming_events: Array.isArray(data.upcoming_events) ? data.upcoming_events : [],
       calendar: Array.isArray(data.calendar) ? data.calendar : [],
-      generated_at: data.generated_at ?? null,
-      api_version: data.api_version ?? null,
+      generated_at: data.generated_at != null ? data.generated_at : null,
+      api_version: data.api_version != null ? data.api_version : null,
     };
   } catch (error) {
     clearTimeout(timeoutId);

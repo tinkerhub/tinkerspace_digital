@@ -194,7 +194,7 @@ function App() {
                                 showCalendar ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                         >
-                            <CalendarDashboard />
+                            <CalendarDashboard isActive={showCalendar} />
                         </div>
                     </div>
                 </div>

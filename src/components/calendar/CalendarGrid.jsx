@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getCategoryColors } from './EventBadge';
 import { layoutWeekEvents } from '../../utils/calendar/calendarLayout';
 
@@ -54,61 +54,69 @@ function isSameDay(a, b) {
 }
 
 /**
- * AutoScrollEvents — renders event bars in a grid that auto-scrolls
- * vertically when content overflows the container.
+ * WeekEventGrid — renders event bars for a single week with a stationary
+ * 2-page crossfade when events overflow the available row height.
  */
-const AutoScrollEvents = ({ tracks, weekIdx }) => {
-  const containerRef = useRef(null);
-  const contentRef = useRef(null);
-  const originalRef = useRef(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const [contentHeight, setContentHeight] = useState(0);
+const WeekEventGrid = ({ tracks, page }) => {
+  // Columns with overflow (trackIdx >= 2)
+  const overflowingCols = useMemo(() => {
+    const cols = new Set();
+    tracks.forEach(event => {
+      if (event.trackIdx >= 2) {
+        for (let c = event.startCol; c < event.startCol + event.span; c++) {
+          cols.add(c);
+        }
+      }
+    });
+    return cols;
+  }, [tracks]);
 
-  const checkOverflow = useCallback(() => {
-    if (containerRef.current && originalRef.current) {
-      const containerH = containerRef.current.clientHeight;
-      const originalH = originalRef.current.scrollHeight;
-      setIsOverflowing(originalH > containerH + 2); // 2px tolerance
-      setContentHeight(originalH);
-    }
-  }, []);
+  const hasMultiplePages = overflowingCols.size > 0;
 
-  useEffect(() => {
-    checkOverflow();
-    const observer = new ResizeObserver(checkOverflow);
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [tracks, checkOverflow]);
+  // Page 0: top 2 tracks
+  const page0Events = useMemo(() => {
+    return tracks.filter(t => t.trackIdx < 2);
+  }, [tracks]);
 
-  const animationName = `weekScroll-${weekIdx}`;
-  // Scroll through original content height, pause, then loop
-  const duration = Math.max(contentHeight / 12, 8); // ~12px/sec, minimum 8s
+  // Page 1: overflow tracks in top slots + keep non-overflowing days visible
+  const page1Events = useMemo(() => {
+    if (!hasMultiplePages) return page0Events;
 
-  return (
-    <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden relative">
-      {isOverflowing && (
-        <style>{`
-          @keyframes ${animationName} {
-            0% { transform: translateY(0); }
-            45% { transform: translateY(-${contentHeight}px); }
-            50% { transform: translateY(-${contentHeight}px); }
-            95% { transform: translateY(0); }
-            100% { transform: translateY(0); }
+    const events = [];
+    tracks.forEach(event => {
+      if (event.trackIdx >= 2) {
+        events.push({
+          ...event,
+          displayRow: event.trackIdx - 2 + 1,
+        });
+      } else {
+        let overlapsWithOverflow = false;
+        for (let c = event.startCol; c < event.startCol + event.span; c++) {
+          if (overflowingCols.has(c)) {
+            overlapsWithOverflow = true;
+            break;
           }
-        `}</style>
-      )}
-      <div
-        ref={contentRef}
-        style={isOverflowing ? {
-          animation: `${animationName} ${duration}s ease-in-out infinite`,
-        } : undefined}
-      >
-        <div ref={originalRef} className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5">
-          {tracks.map((event, idx) => {
+        }
+        if (!overlapsWithOverflow) {
+          events.push({
+            ...event,
+            displayRow: event.trackIdx + 1,
+          });
+        }
+      }
+    });
+    return events;
+  }, [tracks, hasMultiplePages, overflowingCols, page0Events]);
+
+  if (!hasMultiplePages) {
+    return (
+      <div className="flex-1 min-h-0 overflow-hidden relative">
+        <div className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5">
+          {page0Events.map((event, idx) => {
             const colors = getCategoryColors(event.category);
             return (
               <div
-                key={`event-${event.id}-${idx}`}
+                key={`single-${event.id || idx}`}
                 style={{ gridColumn: `${event.startCol} / span ${event.span}`, gridRow: event.trackIdx + 1 }}
                 className="px-1 z-10"
               >
@@ -119,35 +127,84 @@ const AutoScrollEvents = ({ tracks, weekIdx }) => {
             );
           })}
         </div>
-        {/* Duplicate for seamless loop */}
-        {isOverflowing && (
-          <div className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5 mt-1">
-            {tracks.map((event, idx) => {
-              const colors = getCategoryColors(event.category);
-              return (
-                <div
-                  key={`event-dup-${event.id}-${idx}`}
-                  style={{ gridColumn: `${event.startCol} / span ${event.span}`, gridRow: event.trackIdx + 1 }}
-                  className="px-1 z-10"
-                >
-                  <div className={`truncate text-xs font-semibold tracking-wide leading-snug px-2 py-1 rounded-sm ${colors.badge}`}>
-                    {event.title}
-                  </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 min-h-0 overflow-hidden relative">
+      {/* Page 0 Layer (0s - 5s) */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+          page === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+        }`}
+      >
+        <div className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5">
+          {page0Events.map((event, idx) => {
+            const colors = getCategoryColors(event.category);
+            return (
+              <div
+                key={`p0-${event.id || idx}`}
+                style={{ gridColumn: `${event.startCol} / span ${event.span}`, gridRow: event.trackIdx + 1 }}
+                className="px-1 z-10"
+              >
+                <div className={`truncate text-xs font-semibold tracking-wide leading-snug px-2 py-1 rounded-sm ${colors.badge}`}>
+                  {event.title}
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Page 1 Layer (5s - 10s) */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+          page === 1 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+        }`}
+      >
+        <div className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5">
+          {page1Events.map((event, idx) => {
+            const colors = getCategoryColors(event.category);
+            return (
+              <div
+                key={`p1-${event.id || idx}`}
+                style={{ gridColumn: `${event.startCol} / span ${event.span}`, gridRow: event.displayRow }}
+                className="px-1 z-10"
+              >
+                <div className={`truncate text-xs font-semibold tracking-wide leading-snug px-2 py-1 rounded-sm ${colors.badge}`}>
+                  {event.title}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 };
 
 
-const CalendarGrid = ({ currentDate, events = [], className = '' }) => {
+const CalendarGrid = ({ currentDate, events = [], isActive = true, className = '' }) => {
   const today = new Date();
   const cells = generateMonthGrid(currentDate);
-  
+  const [page, setPage] = useState(0);
+
+  // Synchronize 5-second page cycle when calendar is active
+  useEffect(() => {
+    if (!isActive) {
+      setPage(0);
+      return;
+    }
+
+    setPage(0);
+    const interval = setInterval(() => {
+      setPage(p => (p === 0 ? 1 : 0));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isActive]);
+
   // Group cells into weeks
   const weeks = [];
   for (let i = 0; i < cells.length; i += 7) {
@@ -202,8 +259,8 @@ const CalendarGrid = ({ currentDate, events = [], className = '' }) => {
                 ))}
               </div>
 
-              {/* Event bars — auto-scrolls when overflowing */}
-              <AutoScrollEvents tracks={tracks} weekIdx={weekIdx} />
+              {/* Event bars — synchronized stationary crossfade */}
+              <WeekEventGrid tracks={tracks} page={page} />
             </div>
           );
         })}

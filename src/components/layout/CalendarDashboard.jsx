@@ -18,7 +18,7 @@ import { Calendar, LiveEventCard, UpcomingEvents } from '../calendar';
 
 const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-const CalendarDashboard = () => {
+const CalendarDashboard = ({ isActive = true }) => {
   // ── State ──────────────────────────────────────────────────────
   const [data, setData] = useState(null);            // null = never loaded
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -110,6 +110,7 @@ const CalendarDashboard = () => {
         <Calendar
           events={calendarEvents}
           currentDate={currentDate}
+          isActive={isActive}
           className="h-full"
         />
       </div>
@@ -122,6 +123,7 @@ const CalendarDashboard = () => {
         {/* Upcoming Events */}
         <UpcomingEvents
           events={upcomingEvents}
+          isActive={isActive}
           className="flex-1 overflow-hidden"
         />
       </div>

@@ -15,7 +15,7 @@ import EmptyState from './EmptyState';
  *   className?: string
  * }} props
  */
-const Calendar = ({ events = [], currentDate, className = '' }) => {
+const Calendar = ({ events = [], currentDate, isActive = true, className = '' }) => {
   const displayDate = currentDate || new Date();
 
   return (
@@ -28,6 +28,7 @@ const Calendar = ({ events = [], currentDate, className = '' }) => {
         <CalendarGrid
           currentDate={displayDate}
           events={events}
+          isActive={isActive}
         />
       ) : (
         <EmptyState type="calendar" />

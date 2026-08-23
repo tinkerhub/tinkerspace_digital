@@ -34,26 +34,42 @@ const MarqueeText = ({ text, className }) => {
  *
  * @param {{ events: Array, className?: string }} props
  */
-const UpcomingEvents = ({ events = [], className = '' }) => {
+const UpcomingEvents = ({ events = [], isActive = true, className = '' }) => {
   const [page, setPage] = useState(0);
   const eventsPerPage = 5;
   const totalPages = Math.ceil(events.length / eventsPerPage) || 1;
+  const isFirstMountRef = useRef(true);
+  const wasActiveRef = useRef(false);
 
-  // Reset page when events change
+  // Progressive pagination across calendar visits
   useEffect(() => {
-    setPage(0);
-  }, [events.length]);
+    if (isActive) {
+      if (isFirstMountRef.current) {
+        isFirstMountRef.current = false;
+        setPage(0);
+      } else if (!wasActiveRef.current) {
+        if (totalPages > 2) {
+          setPage(p => (p + 1) % totalPages);
+        } else {
+          setPage(0);
+        }
+      }
+      wasActiveRef.current = true;
+    } else {
+      wasActiveRef.current = false;
+    }
+  }, [isActive, totalPages]);
 
+  // Flip page at 5-second mark during active calendar view
   useEffect(() => {
-    if (totalPages <= 1) return;
+    if (!isActive || totalPages <= 1) return;
+
     const interval = setInterval(() => {
       setPage(p => (p + 1) % totalPages);
-    }, 10000); // 10 seconds per page
-    return () => clearInterval(interval);
-  }, [totalPages]);
+    }, 5000);
 
-  const start = page * eventsPerPage;
-  const display = events.slice(start, start + eventsPerPage);
+    return () => clearInterval(interval);
+  }, [isActive, totalPages]);
 
   if (events.length === 0) {
     return (
@@ -77,7 +93,7 @@ const UpcomingEvents = ({ events = [], className = '' }) => {
       `}</style>
       
       {/* Section label and Page indicator */}
-      <div className="px-4 pt-4 pb-2 flex justify-between items-center">
+      <div className="px-4 pt-4 pb-2 flex justify-between items-center z-20 relative">
         <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 transition-colors duration-500">
           Upcoming
         </h4>
@@ -95,53 +111,67 @@ const UpcomingEvents = ({ events = [], className = '' }) => {
         )}
       </div>
 
-      {/* Event list */}
-      <div className="flex flex-col flex-1">
-        {display.map((event, idx) => {
-          const startDate = new Date(event.starts_at);
-          const month = startDate.toLocaleString('default', { month: 'short' }).toUpperCase();
-          const day = startDate.getDate();
-          const time = startDate.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-          });
+      {/* Paginated Event List with Smooth Crossfade */}
+      <div className="flex-1 relative min-h-0">
+        {Array.from({ length: totalPages }).map((_, pageIdx) => {
+          const pageSlice = events.slice(pageIdx * eventsPerPage, (pageIdx + 1) * eventsPerPage);
+          const isCurrentPage = page === pageIdx;
 
           return (
             <div
-              key={event.id || idx}
-              className={`flex items-center gap-3 px-4 py-3 transition-colors duration-300 ${
-                idx < display.length - 1
-                  ? 'border-b border-gray-200/30 dark:border-white/5'
-                  : ''
+              key={pageIdx}
+              className={`absolute inset-0 flex flex-col transition-opacity duration-500 ease-in-out ${
+                isCurrentPage ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
-              {/* Date block */}
-              <div className="flex flex-col items-center justify-center w-10 flex-shrink-0">
-                <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider leading-none transition-colors duration-500">
-                  {month}
-                </span>
-                <span className="text-lg font-bold text-gray-800 dark:text-gray-100 leading-tight transition-colors duration-500">
-                  {day}
-                </span>
-              </div>
+              {pageSlice.map((event, idx) => {
+                const startDate = new Date(event.starts_at);
+                const month = startDate.toLocaleString('default', { month: 'short' }).toUpperCase();
+                const day = startDate.getDate();
+                const time = startDate.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                });
 
-              {/* Divider */}
-              <div className="w-px h-8 bg-gray-200/50 dark:bg-gray-600/30 flex-shrink-0 transition-colors duration-500" />
+                return (
+                  <div
+                    key={event.id || idx}
+                    className={`flex items-center gap-3 px-4 py-3 transition-colors duration-300 ${
+                      idx < pageSlice.length - 1
+                        ? 'border-b border-gray-200/30 dark:border-white/5'
+                        : ''
+                    }`}
+                  >
+                    {/* Date block */}
+                    <div className="flex flex-col items-center justify-center w-10 flex-shrink-0">
+                      <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider leading-none transition-colors duration-500">
+                        {month}
+                      </span>
+                      <span className="text-lg font-bold text-gray-800 dark:text-gray-100 leading-tight transition-colors duration-500">
+                        {day}
+                      </span>
+                    </div>
 
-              {/* Event info */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <MarqueeText 
-                  text={event.title} 
-                  className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug transition-colors duration-500" 
-                />
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px] text-gray-400 dark:text-gray-500 transition-colors duration-500 flex-shrink-0">
-                    {time}
-                  </span>
-                  <EventBadge category={event.category} />
-                </div>
-              </div>
+                    {/* Divider */}
+                    <div className="w-px h-8 bg-gray-200/50 dark:bg-gray-600/30 flex-shrink-0 transition-colors duration-500" />
+
+                    {/* Event info */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <MarqueeText 
+                        text={event.title} 
+                        className="text-sm font-semibold text-gray-800 dark:text-gray-100 leading-snug transition-colors duration-500" 
+                      />
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500 transition-colors duration-500 flex-shrink-0">
+                          {time}
+                        </span>
+                        <EventBadge category={event.category} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         })}

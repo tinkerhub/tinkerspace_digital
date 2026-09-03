@@ -88,3 +88,31 @@ export function layoutWeekEvents(week, events) {
 
   return { tracks };
 }
+
+/**
+ * Returns the 7 Date objects (Sun–Sat) for the week containing `date`.
+ */
+export function getWeekDays(date) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return d;
+  });
+}
+
+/**
+ * Returns events overlapping the given day, sorted by start time.
+ */
+export function getEventsForDay(day, events) {
+  const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+  return events
+    .filter(event => {
+      const eStart = new Date(event.starts_at);
+      const eEnd = event.ends_at ? new Date(event.ends_at) : eStart;
+      const startD = new Date(eStart.getFullYear(), eStart.getMonth(), eStart.getDate());
+      const endD = new Date(eEnd.getFullYear(), eEnd.getMonth(), eEnd.getDate());
+      return startD <= dayStart && endD >= dayStart;
+    })
+    .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+}

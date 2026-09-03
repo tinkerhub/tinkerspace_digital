@@ -83,9 +83,12 @@ const CalendarDashboard = () => {
     return new Date();
   }, [generatedAt]);
 
-  var calendarEvents = useMemo(function () { return (calendar != null) ? calendar : []; }, [calendar]);
-  var liveEvent = useMemo(function () { return (liveEventRaw != null) ? liveEventRaw : null; }, [liveEventRaw]);
-  var upcomingEvents = useMemo(function () { return (upcomingRaw != null) ? upcomingRaw : []; }, [upcomingRaw]);
+  const calendarEvents = useMemo(() => data?.calendar ?? [], [data?.calendar]);
+  const liveEvent = useMemo(() => data?.live_event ?? null, [data?.live_event]);
+  const upcomingEvents = useMemo(
+    () => (data?.upcoming_events ?? []).filter(event => new Date(event.starts_at) > currentDate),
+    [data?.upcoming_events, currentDate]
+  );
 
   // ── Render: initial loading state ──────────────────────────────
   if (isInitialLoad) {

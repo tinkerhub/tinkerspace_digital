@@ -1,7 +1,9 @@
 import React from 'react';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
+import CalendarKanban from './CalendarKanban';
 import EmptyState from './EmptyState';
+import { CALENDAR_VIEW_MODE } from '../../config/calendarConfig';
 
 /**
  * Calendar — top-level calendar component.
@@ -25,10 +27,11 @@ const Calendar = ({ events = [], currentDate, className = '' }) => {
       <CalendarHeader currentDate={displayDate} className="mb-3" />
 
       {events.length > 0 ? (
-        <CalendarGrid
-          currentDate={displayDate}
-          events={events}
-        />
+        CALENDAR_VIEW_MODE === 'kanban' ? (
+          <CalendarKanban currentDate={displayDate} events={events} />
+        ) : (
+          <CalendarGrid currentDate={displayDate} events={events} />
+        )
       ) : (
         <EmptyState type="calendar" />
       )}

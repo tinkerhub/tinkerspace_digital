@@ -61,15 +61,24 @@ const AutoScrollEvents = ({ tracks, weekIdx }) => {
   const containerRef = useRef(null);
   const contentRef = useRef(null);
   const originalRef = useRef(null);
+  const duplicateRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
 
+  // Measure the real gap between the two copies (offsetTop delta) rather
+  // than assuming a margin value, so the loop stays seamless even if the
+  // spacing classes below ever change.
   const checkOverflow = useCallback(() => {
     if (containerRef.current && originalRef.current) {
       const containerH = containerRef.current.clientHeight;
       const originalH = originalRef.current.scrollHeight;
-      setIsOverflowing(originalH > containerH + 2); // 2px tolerance
-      setContentHeight(originalH);
+      const overflowing = originalH > containerH + 2; // 2px tolerance
+      setIsOverflowing(overflowing);
+      setContentHeight(
+        overflowing && duplicateRef.current
+          ? duplicateRef.current.offsetTop - originalRef.current.offsetTop
+          : originalH
+      );
     }
   }, []);
 
@@ -79,6 +88,12 @@ const AutoScrollEvents = ({ tracks, weekIdx }) => {
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [tracks, checkOverflow]);
+
+  // Duplicate block only mounts once isOverflowing flips true; re-measure
+  // then so contentHeight uses the real offsetTop gap, not the fallback.
+  useEffect(() => {
+    if (isOverflowing) checkOverflow();
+  }, [isOverflowing, checkOverflow]);
 
   const animationName = `weekScroll-${weekIdx}`;
   // Scroll through original content height, pause, then loop
@@ -121,7 +136,7 @@ const AutoScrollEvents = ({ tracks, weekIdx }) => {
         </div>
         {/* Duplicate for seamless loop */}
         {isOverflowing && (
-          <div className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5 mt-1">
+          <div ref={duplicateRef} className="grid grid-cols-7 auto-rows-max gap-y-1 py-0.5 mt-1">
             {tracks.map((event, idx) => {
               const colors = getCategoryColors(event.category);
               return (

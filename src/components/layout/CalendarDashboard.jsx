@@ -72,9 +72,6 @@ const CalendarDashboard = () => {
 
   // ── Derived values (memoised) ──────────────────────────────────
   var generatedAt = data && data.generated_at;
-  var calendar = data && data.calendar;
-  var liveEventRaw = data && data.live_event;
-  var upcomingRaw = data && data.upcoming_events;
 
   var currentDate = useMemo(function () {
     if (generatedAt) {

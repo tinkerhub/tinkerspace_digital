@@ -102,17 +102,17 @@ export function getWeekDays(date) {
 }
 
 /**
- * Returns events overlapping the given day, sorted by start time.
+ * Returns events starting on the given day, sorted by start time.
+ * Multi-day events only appear on their start day's card — no
+ * start-to-end spanning in the kanban view.
  */
 export function getEventsForDay(day, events) {
   const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
   return events
     .filter(event => {
       const eStart = new Date(event.starts_at);
-      const eEnd = event.ends_at ? new Date(event.ends_at) : eStart;
       const startD = new Date(eStart.getFullYear(), eStart.getMonth(), eStart.getDate());
-      const endD = new Date(eEnd.getFullYear(), eEnd.getMonth(), eEnd.getDate());
-      return startD <= dayStart && endD >= dayStart;
+      return startD.getTime() === dayStart.getTime();
     })
     .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
 }

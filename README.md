@@ -38,7 +38,7 @@ This starts:
 The mock server exposes the same read endpoints the screen uses in production:
 
 - `GET /checkin/active`
-- `GET /api/v1/display`
+- `GET /v1/public/event/all`
 
 The seeded mock payloads include active makers, a live event, upcoming events, and a populated calendar so contributors can work on the UI without access to the internal TinkerHub services.
 
@@ -58,9 +58,8 @@ Copy `.env.example` to `.env` and set:
 
 | Variable | Description |
 |---|---|
-| `REACT_APP_API_BASE_URL` | Base URL for maker/user data |
-| `REACT_APP_SPACECALENDAR_API` | Space calendar API endpoint |
-| `REACT_APP_SPACECALENDAR_API_KEY` | API key for the calendar service |
+| `REACT_APP_API_BASE_URL` | Base URL for maker/checkin data and the public events feed |
+| `REACT_APP_SPACE_ID` | Which TinkerSpace's events to show on this display (default `1`). Will move to an admin-configurable value later. |
 
 ## Scripts
 
@@ -86,9 +85,8 @@ Set these environment variables in the Netlify site dashboard (**Site configurat
 
 | Variable | Description |
 |---|---|
-| `REACT_APP_API_BASE_URL` | Base URL for maker/user data |
-| `REACT_APP_SPACECALENDAR_API` | Space calendar API endpoint |
-| `REACT_APP_SPACECALENDAR_API_KEY` | API key for the calendar service |
+| `REACT_APP_API_BASE_URL` | Base URL for maker/checkin data and the public events feed |
+| `REACT_APP_SPACE_ID` | Which TinkerSpace's events to show on this display (default `1`). Will move to an admin-configurable value later. |
 
 If the Netlify build fails on Corepack/pnpm version resolution, add `COREPACK_INTEGRITY_KEYS=0` as a build environment variable.
 

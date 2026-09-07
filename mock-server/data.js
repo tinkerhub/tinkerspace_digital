@@ -47,17 +47,17 @@ function toIso(date) {
   return date.toISOString();
 }
 
-function atTime(baseDate, dayOffset, hours, minutes = 0, durationMinutes = 60) {
-  const startsAt = new Date(baseDate);
-  startsAt.setDate(baseDate.getDate() + dayOffset);
-  startsAt.setHours(hours, minutes, 0, 0);
+function eventAt(baseDate, dayOffset, hours, minutes = 0, durationMinutes = 60) {
+  const startDate = new Date(baseDate);
+  startDate.setDate(baseDate.getDate() + dayOffset);
+  startDate.setHours(hours, minutes, 0, 0);
 
-  const endsAt = new Date(startsAt);
-  endsAt.setMinutes(endsAt.getMinutes() + durationMinutes);
+  const endDate = new Date(startDate);
+  endDate.setMinutes(endDate.getMinutes() + durationMinutes);
 
   return {
-    starts_at: toIso(startsAt),
-    ends_at: toIso(endsAt),
+    startDate: toIso(startDate),
+    endDate: toIso(endDate),
   };
 }
 
@@ -69,145 +69,63 @@ function getMockMakers() {
   return MOCK_MAKERS;
 }
 
-function getMockCalendarDisplay(now = new Date()) {
+/**
+ * Raw event fixtures shaped like the real TinkerHub `/v1/public/event/all`
+ * response — deliberately spanning multiple spaceId values (including
+ * `null`, like real online/group events) so local dev actually exercises
+ * the client-side space filter instead of trusting a server-side one.
+ */
+function getMockEvents(now = new Date()) {
   const monthAnchor = startOfMonth(now);
+  let nextId = 1;
+  const id = () => nextId++;
 
-  const liveStartsAt = new Date(now);
-  liveStartsAt.setMinutes(liveStartsAt.getMinutes() - 20, 0, 0);
-  const liveEndsAt = new Date(now);
-  liveEndsAt.setMinutes(liveEndsAt.getMinutes() + 70, 0, 0);
-
-  return {
-    live_event: {
-      id: 'live-dueling-club',
-      title: 'Dueling Club: Practical Defense Lab',
-      category: 'Talk',
-      status: 'ongoing',
-      starts_at: toIso(liveStartsAt),
-      ends_at: toIso(liveEndsAt),
+  const events = [
+    // Live right now, for TinkerSpace id 1 (the default)
+    {
+      name: 'Dueling Club: Practical Defense Lab',
+      type: 'Talk_Session',
+      spaceId: 1,
+      ...(() => {
+        const startDate = new Date(now);
+        startDate.setMinutes(startDate.getMinutes() - 20, 0, 0);
+        const endDate = new Date(now);
+        endDate.setMinutes(endDate.getMinutes() + 70, 0, 0);
+        return { startDate: toIso(startDate), endDate: toIso(endDate) };
+      })(),
     },
-    upcoming_events: [
-      {
-        id: 'upcoming-marauders-workshop',
-        title: 'Marauders Workshop: Enchanted Map Interfaces',
-        category: 'Workshop',
-        status: 'upcoming',
-        ...atTime(now, 1, 18, 30, 90),
-      },
-      {
-        id: 'upcoming-common-room-open-house',
-        title: 'Common Room Open House for New Students',
-        category: 'Community',
-        status: 'upcoming',
-        ...atTime(now, 2, 16, 0, 120),
-      },
-      {
-        id: 'upcoming-potions-clinic',
-        title: 'Potions Clinic: Fine-Tuning Draught Ratios',
-        category: 'Research',
-        status: 'upcoming',
-        ...atTime(now, 4, 17, 0, 120),
-      },
-      {
-        id: 'upcoming-quidditch-night',
-        title: 'Quidditch Night: Build a Match Tracker',
-        category: 'Meetup',
-        status: 'upcoming',
-        ...atTime(now, 6, 18, 0, 150),
-      },
-      {
-        id: 'upcoming-charms-lab',
-        title: 'Charms Lab: Intro to Feather Levitation',
-        category: 'Learning Program',
-        status: 'upcoming',
-        ...atTime(now, 8, 11, 0, 120),
-      },
-      {
-        id: 'upcoming-great-hall-forum',
-        title: 'Great Hall Forum: What Should Hogwarts Build Next?',
-        category: 'Community',
-        status: 'upcoming',
-        ...atTime(now, 10, 19, 0, 90),
-      },
-    ],
-    calendar: [
-      {
-        id: 'calendar-01',
-        title: 'Defense Against the Dark Arts Studio',
-        category: 'Talk',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 2, 18, 0, 120),
-      },
-      {
-        id: 'calendar-02',
-        title: 'Forbidden Forest Field Workshop',
-        category: 'Workshop',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 3, 18, 30, 120),
-      },
-      {
-        id: 'calendar-03',
-        title: 'Order of the Phoenix Build Circle',
-        category: 'Meetup',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 5, 17, 30, 120),
-      },
-      {
-        id: 'calendar-04',
-        title: 'Hogsmeade Community Sync',
-        category: 'Community',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 8, 16, 0, 60),
-      },
-      {
-        id: 'calendar-05',
-        title: 'Rapid Broom Prototype Lab',
-        category: 'Workshop',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 10, 14, 0, 150),
-      },
-      {
-        id: 'calendar-06',
-        title: 'Great Hall Open House',
-        category: 'General Event',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 12, 11, 0, 180),
-      },
-      {
-        id: 'calendar-07',
-        title: 'Department of Mysteries Demo Review',
-        category: 'Research',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 15, 15, 0, 120),
-      },
-      {
-        id: 'calendar-08',
-        title: 'Triwizard Hack Night Warmup',
-        category: 'Hackathon',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 17, 18, 0, 180),
-      },
-      {
-        id: 'calendar-09',
-        title: 'O.W.L. Portfolio Clinic',
-        category: 'Learning Program',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 20, 17, 0, 90),
-      },
-      {
-        id: 'calendar-10',
-        title: 'Wizarding Community Film Night',
-        category: 'Community',
-        status: 'upcoming',
-        ...atTime(monthAnchor, 24, 19, 0, 120),
-      },
-    ],
-    generated_at: toIso(now),
-    api_version: 'mock-1',
-  };
+    { name: 'Marauders Workshop: Enchanted Map Interfaces', type: 'Workshop', spaceId: 1, ...eventAt(now, 1, 18, 30, 90) },
+    { name: 'Common Room Open House for New Students', type: 'Community', spaceId: 1, ...eventAt(now, 2, 16, 0, 120) },
+    { name: 'Potions Clinic: Fine-Tuning Draught Ratios', type: 'Research', spaceId: 1, ...eventAt(now, 4, 17, 0, 120) },
+    { name: 'Quidditch Night: Build a Match Tracker', type: 'Meetup', spaceId: 1, ...eventAt(now, 6, 18, 0, 150) },
+    { name: 'Charms Lab: Intro to Feather Levitation', type: 'Learning_Program', spaceId: 1, ...eventAt(now, 8, 11, 0, 120) },
+    { name: 'Great Hall Forum: What Should Hogwarts Build Next?', type: 'Community', spaceId: 1, ...eventAt(now, 10, 19, 0, 90) },
+    { name: 'Forbidden Forest Field Bootcamp', type: 'Bootcamp', spaceId: 1, ...eventAt(monthAnchor, 3, 18, 30, 120) },
+    { name: 'Order of the Phoenix Build Circle', type: 'Meetup', spaceId: 1, ...eventAt(monthAnchor, 5, 17, 30, 120) },
+    { name: 'Triwizard Hack Night Warmup', type: 'Hackathon', spaceId: 1, ...eventAt(monthAnchor, 17, 18, 0, 180) },
+
+    // A different physical TinkerSpace (id 2) — should be filtered out
+    // when the display is configured for space 1.
+    { name: 'Hogsmeade Community Sync', type: 'Meetup', spaceId: 2, ...eventAt(monthAnchor, 8, 16, 0, 60) },
+    { name: 'Rapid Broom Prototype Lab', type: 'Workshop', spaceId: 2, ...eventAt(monthAnchor, 10, 14, 0, 150) },
+
+    // Online/group programs not tied to any physical space — mirrors the
+    // real API always returning `spaceId: null` for these.
+    { name: 'O.W.L. Portfolio Clinic', type: 'Learning_Program', spaceId: null, ...eventAt(monthAnchor, 20, 17, 0, 90) },
+    { name: 'Wizarding Community Film Night', type: 'Community', spaceId: null, ...eventAt(monthAnchor, 24, 19, 0, 120) },
+
+    // Unpublished — should never reach the display regardless of space.
+    { name: 'Draft: Department of Mysteries Demo Review', type: 'Research', spaceId: 1, status: 'draft', ...eventAt(monthAnchor, 15, 15, 0, 120) },
+  ];
+
+  return events.map((event) => ({
+    id: id(),
+    status: 'published',
+    ...event,
+  }));
 }
 
 module.exports = {
   getMockMakers,
-  getMockCalendarDisplay,
+  getMockEvents,
 };

@@ -1,9 +1,8 @@
 const http = require('http');
 const { URL } = require('url');
-const { getMockMakers, getMockCalendarDisplay } = require('./data');
+const { getMockMakers, getMockEvents } = require('./data');
 
 const PORT = Number(process.env.MOCK_SERVER_PORT || 4010);
-const API_KEY = process.env.MOCK_SPACECALENDAR_API_KEY || 'tinkerspace-local-dev';
 
 function writeJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
@@ -59,18 +58,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/v1/display') {
-    if (req.headers['x-api-key'] !== API_KEY) {
-      writeJson(res, 401, {
-        success: false,
-        error: 'Invalid X-API-Key for mock SpaceCalendar endpoint',
-      });
-      return;
-    }
-
+  if (req.method === 'GET' && url.pathname === '/v1/public/event/all') {
+    // No auth — public endpoint. `spaceId` (if present) is intentionally
+    // ignored here, matching the real API: it returns every space's events
+    // regardless, so the client is responsible for filtering.
     writeJson(res, 200, {
-      success: true,
-      data: getMockCalendarDisplay(new Date()),
+      status: true,
+      data: getMockEvents(new Date()),
     });
     return;
   }
@@ -83,7 +77,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`[mock-server] listening on http://localhost:${PORT}`);
-  console.log('[mock-server] routes: GET /health, GET /checkin/active, GET /api/v1/display');
+  console.log('[mock-server] routes: GET /health, GET /checkin/active, GET /v1/public/event/all');
 });
 
 function shutdown(signal) {

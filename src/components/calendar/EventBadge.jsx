@@ -47,6 +47,11 @@ const CATEGORY_COLORS = {
     badge: 'bg-gray-500/10 text-gray-600 dark:bg-gray-400/15 dark:text-gray-400',
     border: 'border-gray-200/60 dark:border-gray-500/20',
   },
+  'Bootcamp': {
+    dot: 'bg-orange-500',
+    badge: 'bg-orange-500/10 text-orange-600 dark:bg-orange-400/15 dark:text-orange-400',
+    border: 'border-orange-200/60 dark:border-orange-500/20',
+  },
 };
 
 const DEFAULT_COLORS = {
@@ -62,6 +67,26 @@ const DEFAULT_COLORS = {
  */
 export function getCategoryColors(category) {
   return CATEGORY_COLORS[category] || DEFAULT_COLORS;
+}
+
+/**
+ * Maps a raw TinkerHub platform event `type` (e.g. "Learning_Program",
+ * "Talk_Session") to the display category used by CATEGORY_COLORS.
+ * Unknown types fall through with underscores turned to spaces, and
+ * getCategoryColors() already has a gray DEFAULT_COLORS fallback for
+ * anything that still doesn't match — so a brand new platform `type`
+ * degrades gracefully instead of breaking.
+ * @param {string} type
+ * @returns {string}
+ */
+const TYPE_TO_CATEGORY = {
+  Learning_Program: 'Learning Program',
+  Talk_Session: 'Talk',
+};
+
+export function normalizeCategory(type) {
+  if (!type) return 'General Event';
+  return TYPE_TO_CATEGORY[type] || type.replace(/_/g, ' ');
 }
 
 /**

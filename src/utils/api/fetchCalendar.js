@@ -1,15 +1,17 @@
 /**
- * SpaceCalendar API Service
- * 
- * Fetches display data from the SpaceCalendar API.
- * This module is a standalone service layer — it is not imported
- * anywhere yet and does not trigger any polling or side effects.
- * 
- * Endpoint: GET /api/v1/display
- * Auth:     X-API-Key header
- * 
+ * TinkerHub public events API service
+ *
+ * Fetches every event across every org/space from the public TinkerHub
+ * events endpoint, then narrows it down to this display's TinkerSpace and
+ * shapes it for the calendar UI. Consumed by CalendarDashboard.jsx, which
+ * polls it every 5 minutes.
+ *
+ * Endpoint: GET /v1/public/event/all (no auth — path is public)
+ *
  * @module fetchCalendar
  */
+import { getConfiguredSpaceId } from '../../config/spaceConfig';
+import { buildCalendarDisplay } from '../calendar/normalizeEvents';
 
 const REQUEST_TIMEOUT_MS = 10000;
 
@@ -27,7 +29,8 @@ const FALLBACK_RESPONSE = Object.freeze({
 });
 
 /**
- * Fetches the consolidated display payload from the SpaceCalendar API.
+ * Fetches the raw event list and returns the consolidated display payload
+ * for the configured TinkerSpace.
  *
  * Handles:
  *  - Missing / empty environment variables
@@ -46,39 +49,41 @@ const FALLBACK_RESPONSE = Object.freeze({
  * }>}
  */
 export const fetchCalendarDisplay = async () => {
-  const API_URL = process.env.REACT_APP_SPACECALENDAR_API;
-  const API_KEY = process.env.REACT_APP_SPACECALENDAR_API_KEY;
+  const API_URL = process.env.REACT_APP_API_BASE_URL;
 
   // ── Guard: environment variables ──────────────────────────────
   if (!API_URL) {
     console.warn(
-      '[fetchCalendar] REACT_APP_SPACECALENDAR_API is not set. ' +
+      '[fetchCalendar] REACT_APP_API_BASE_URL is not set. ' +
       'Returning fallback data.'
     );
     return FALLBACK_RESPONSE;
   }
 
-  if (!API_KEY) {
-    console.warn(
-      '[fetchCalendar] REACT_APP_SPACECALENDAR_API_KEY is not set. ' +
-      'Returning fallback data.'
-    );
-    return FALLBACK_RESPONSE;
-  }
+  const spaceId = getConfiguredSpaceId();
 
   // ── Timeout via AbortController ───────────────────────────────
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${API_URL}/api/v1/display`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'X-API-Key': API_KEY,
-      },
-      signal: controller.signal,
-    });
+    // The API doesn't currently filter by spaceId server-side (it returns
+    // every space's events regardless), so this param is sent defensively
+    // for the day it does — the client-side filter in buildCalendarDisplay
+    // is what actually enforces it either way.
+    // The endpoint defaults to a 20-item page with no pagination metadata
+    // in the response, so a generous explicit limit is the only way to
+    // avoid silently dropping events.
+    const response = await fetch(
+      `${API_URL}/v1/public/event/all?spaceId=${encodeURIComponent(spaceId)}&limit=1000`,
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        signal: controller.signal,
+      }
+    );
 
     clearTimeout(timeoutId);
 
@@ -102,25 +107,16 @@ export const fetchCalendarDisplay = async () => {
     // ── Parse JSON ────────────────────────────────────────────
     const json = await response.json();
 
-    // The API wraps payloads in { success, data }.
+    // The API wraps payloads in { status, data }.
     // Guard against unexpected shapes.
-    if (!json || !json.success || !json.data) {
+    if (!json || !json.status || !Array.isArray(json.data)) {
       console.error(
         '[fetchCalendar] Unexpected response structure:', json
       );
       return FALLBACK_RESPONSE;
     }
 
-    const { data } = json;
-
-    // ── Normalise & return ────────────────────────────────────
-    return {
-      live_event: data.live_event != null ? data.live_event : null,
-      upcoming_events: Array.isArray(data.upcoming_events) ? data.upcoming_events : [],
-      calendar: Array.isArray(data.calendar) ? data.calendar : [],
-      generated_at: data.generated_at != null ? data.generated_at : null,
-      api_version: data.api_version != null ? data.api_version : null,
-    };
+    return buildCalendarDisplay(json.data, { spaceId });
   } catch (error) {
     clearTimeout(timeoutId);
 

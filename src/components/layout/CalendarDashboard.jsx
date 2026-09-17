@@ -18,7 +18,7 @@ import { Calendar, LiveEventCard, UpcomingEvents } from '../calendar';
 
 const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-const CalendarDashboard = () => {
+const CalendarDashboard = ({ spaceId }) => {
   // ── State ──────────────────────────────────────────────────────
   const [data, setData] = useState(null);            // null = never loaded
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -33,7 +33,7 @@ const CalendarDashboard = () => {
     isFetchingRef.current = true;
 
     try {
-      const result = await fetchCalendarDisplay();
+      const result = await fetchCalendarDisplay(spaceId);
 
       // Only update state if we got meaningful data, or if we've
       // never had a successful load (so empty states render).
@@ -54,9 +54,9 @@ const CalendarDashboard = () => {
       isFetchingRef.current = false;
       setIsInitialLoad(false);
     }
-  }, []);
+  }, [spaceId]);
 
-  // ── Mount: initial fetch + polling ─────────────────────────────
+  // ── Mount + spaceId changes: refetch immediately, then poll ─────
   useEffect(() => {
     refresh();
 
@@ -68,7 +68,7 @@ const CalendarDashboard = () => {
         intervalRef.current = null;
       }
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [refresh]);
 
   // ── Derived values (memoised) ──────────────────────────────────
   var generatedAt = data && data.generated_at;

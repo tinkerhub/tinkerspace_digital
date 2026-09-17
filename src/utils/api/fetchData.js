@@ -1,7 +1,6 @@
 export const fetchData = async () => {
     const API_URL = process.env.REACT_APP_API_BASE_URL;
-    console.log(API_URL);
-    
+
     try {
         if (!API_URL) {
             throw new Error('REACT_APP_API_BASE_URL is not set. Please configure it in your .env file.');

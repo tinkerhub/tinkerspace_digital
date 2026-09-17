@@ -5,10 +5,12 @@ import { getMakerCardsPerPage } from './utils/layout/makerGrid';
 import DISPLAY_CONFIG from './utils/constants/displayConfig';
 import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
 import useGridLayout from './hooks/useGridLayout';
+import useScreenConfig from './hooks/useScreenConfig';
 import Header from './components/layout/Header';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
 import CalendarDashboard from './components/layout/CalendarDashboard';
 import TinkerHubMascot from './components/mascot/TinkerHubMascot';
+import UnclaimedScreen from './components/kiosk/UnclaimedScreen';
 
 const { VIEWS } = DISPLAY_CONFIG;
 
@@ -31,8 +33,11 @@ function App() {
     const cardsPerPage = getMakerCardsPerPage(cols, rows);
     const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
 
+    // ── Screen identity / admin-configured space + durations ──────
+    const { status: screenStatus, code: screenCode, spaceId, calendarDurationMs, makerDurationMs } = useScreenConfig();
+
     // ── Display Orchestration Engine ─────────────────────────────
-    const { currentView } = useDisplayOrchestrator(data.length, totalPages, hasFetched);
+    const { currentView } = useDisplayOrchestrator(data.length, totalPages, hasFetched, makerDurationMs, calendarDurationMs);
     const showMakers = currentView === VIEWS.MAKERS;
     const showCalendar = currentView === VIEWS.CALENDAR;
 
@@ -142,9 +147,13 @@ function App() {
         return () => cancelAnimationFrame(animationFrameId);
     }, []);
 
+    if (screenStatus === 'unclaimed') {
+        return <UnclaimedScreen code={screenCode} />;
+    }
+
     return (
         <div className="relative w-screen h-screen overflow-hidden font-geist text-gray-800 dark:text-gray-100 z-0">
-            
+
             {/* Loading Overlay */}
             <div 
                 className={`absolute inset-0 z-40 flex items-center justify-center transition-opacity duration-1000 ${
@@ -194,7 +203,7 @@ function App() {
                                 showCalendar ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                         >
-                            <CalendarDashboard />
+                            <CalendarDashboard spaceId={spaceId} />
                         </div>
                     </div>
                 </div>

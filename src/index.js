@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import './styles/index.css';
+
+// Code-split: the admin dashboard (and its shadcn/Radix UI) is a separate
+// chunk, never downloaded by the kiosk view at "/".
+const AdminApp = lazy(() => import('./pages/admin/AdminApp'));
 
 const RootComponent = () => {
   // const videoRef = useRef(null);
@@ -124,4 +129,18 @@ const RootComponent = () => {
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<RootComponent />);
+root.render(
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<RootComponent />} />
+      <Route
+        path="/admin/*"
+        element={
+          <Suspense fallback={null}>
+            <AdminApp />
+          </Suspense>
+        }
+      />
+    </Routes>
+  </BrowserRouter>
+);

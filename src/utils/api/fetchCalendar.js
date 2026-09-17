@@ -10,7 +10,6 @@
  *
  * @module fetchCalendar
  */
-import { getConfiguredSpaceId } from '../../config/spaceConfig';
 import { buildCalendarDisplay } from '../calendar/normalizeEvents';
 
 const REQUEST_TIMEOUT_MS = 10000;
@@ -40,6 +39,8 @@ const FALLBACK_RESPONSE = Object.freeze({
  *  - Malformed / missing payload
  *  - Request timeouts
  *
+ * @param {string|number} spaceId - Which TinkerSpace to show events for
+ *   (assigned to this screen via the admin dashboard).
  * @returns {Promise<{
  *   live_event:       object|null,
  *   upcoming_events:  Array,
@@ -48,7 +49,7 @@ const FALLBACK_RESPONSE = Object.freeze({
  *   api_version:      string|null
  * }>}
  */
-export const fetchCalendarDisplay = async () => {
+export const fetchCalendarDisplay = async (spaceId) => {
   const API_URL = process.env.REACT_APP_API_BASE_URL;
 
   // ── Guard: environment variables ──────────────────────────────
@@ -60,7 +61,10 @@ export const fetchCalendarDisplay = async () => {
     return FALLBACK_RESPONSE;
   }
 
-  const spaceId = getConfiguredSpaceId();
+  // ── Guard: not assigned a space yet (screen unclaimed/pending) ──
+  if (spaceId === null || spaceId === undefined) {
+    return FALLBACK_RESPONSE;
+  }
 
   // ── Timeout via AbortController ───────────────────────────────
   const controller = new AbortController();
@@ -110,9 +114,6 @@ export const fetchCalendarDisplay = async () => {
     // The API wraps payloads in { status, data }.
     // Guard against unexpected shapes.
     if (!json || !json.status || !Array.isArray(json.data)) {
-      console.error(
-        '[fetchCalendar] Unexpected response structure:', json
-      );
       return FALLBACK_RESPONSE;
     }
 

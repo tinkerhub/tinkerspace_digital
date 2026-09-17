@@ -14,8 +14,6 @@ export async function getCurrentWeather() {
 
     const data = await response.json();
 
-    console.log('weather data:',data)
-    
     //Uncomment the below code to test the rain animation
 
     // const response = {

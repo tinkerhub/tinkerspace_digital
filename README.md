@@ -59,7 +59,33 @@ Copy `.env.example` to `.env` and set:
 | Variable | Description |
 |---|---|
 | `REACT_APP_API_BASE_URL` | Base URL for maker/checkin data and the public events feed |
-| `REACT_APP_SPACE_ID` | Which TinkerSpace's events to show on this display (default `1`). Will move to an admin-configurable value later. |
+| `REACT_APP_SUPABASE_URL` | Supabase project URL — backs the admin dashboard, screen registration/pairing, and live config sync |
+| `REACT_APP_SUPABASE_ANON_KEY` | Supabase anon key (safe to expose client-side; access is enforced by Row Level Security policies, not by keeping this secret) |
+
+### Admin dashboard (screen & space configuration)
+
+Which TinkerSpace a display shows, and the Calendar/Makers rotation durations, are configured remotely via `/admin` instead of env vars — see [Local setup with Supabase](#local-setup-with-supabase) below to run it locally.
+
+- A screen with no assigned space shows a short pairing code and waits.
+- Log into `/admin` (Supabase Auth), find it under **Unclaimed Screens**, claim it, and assign a space.
+- Changes (space, durations) push live to the screen via Supabase Realtime — no redeploy, no manual refresh.
+
+### Local setup with Supabase
+
+The Supabase CLI is a dev dependency (`pnpm add -D supabase` already run) with the schema checked into `supabase/migrations/`.
+
+```bash
+pnpm exec supabase start   # spins up Postgres/Auth/Realtime/Studio locally (needs Docker)
+```
+
+It prints a local API URL and anon key — put those in `.env`. Create an admin login user via the printed Studio URL (Authentication → Add user). `pnpm exec supabase stop` shuts it down.
+
+To apply the same schema to a real hosted Supabase project instead:
+
+```bash
+pnpm exec supabase link --project-ref <your-project-ref>
+pnpm exec supabase db push
+```
 
 ## Scripts
 
@@ -72,6 +98,8 @@ Copy `.env.example` to `.env` and set:
 | `pnpm build:mock` | Create a production build configured against local mock API URLs |
 | `pnpm test` | Run tests |
 | `pnpm deploy` | Build and publish to GitHub Pages (legacy; production uses Netlify) |
+| `pnpm supabase:start` / `:stop` | Start/stop the local Supabase stack (Postgres/Auth/Realtime/Studio) |
+| `pnpm supabase:push` | Apply migrations to the linked hosted Supabase project |
 
 ## Deployment (Netlify)
 
@@ -86,7 +114,8 @@ Set these environment variables in the Netlify site dashboard (**Site configurat
 | Variable | Description |
 |---|---|
 | `REACT_APP_API_BASE_URL` | Base URL for maker/checkin data and the public events feed |
-| `REACT_APP_SPACE_ID` | Which TinkerSpace's events to show on this display (default `1`). Will move to an admin-configurable value later. |
+| `REACT_APP_SUPABASE_URL` | Your hosted Supabase project's URL |
+| `REACT_APP_SUPABASE_ANON_KEY` | Your hosted Supabase project's anon key |
 
 If the Netlify build fails on Corepack/pnpm version resolution, add `COREPACK_INTEGRITY_KEYS=0` as a build environment variable.
 

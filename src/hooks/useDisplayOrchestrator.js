@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import DISPLAY_CONFIG from '../utils/constants/displayConfig';
 
-const { VIEWS, MAKER_DURATION, CALENDAR_DURATION } = DISPLAY_CONFIG;
+const { VIEWS, MAKER_DURATION: DEFAULT_MAKER_DURATION, CALENDAR_DURATION: DEFAULT_CALENDAR_DURATION } = DISPLAY_CONFIG;
 
 /**
  * useDisplayOrchestrator — lightweight display controller.
@@ -17,9 +17,17 @@ const { VIEWS, MAKER_DURATION, CALENDAR_DURATION } = DISPLAY_CONFIG;
  * When all makers leave      → stops rotation, shows Calendar immediately.
  *
  * @param {number} makerCount - Current number of active makers.
+ * @param {number} [makerDurationMs] - Overrides the default maker view duration (e.g. from admin config).
+ * @param {number} [calendarDurationMs] - Overrides the default calendar view duration (e.g. from admin config).
  * @returns {{ currentView: string }}
  */
-export default function useDisplayOrchestrator(makerCount, totalPages = 1, hasFetched = false) {
+export default function useDisplayOrchestrator(
+  makerCount,
+  totalPages = 1,
+  hasFetched = false,
+  makerDurationMs = DEFAULT_MAKER_DURATION,
+  calendarDurationMs = DEFAULT_CALENDAR_DURATION
+) {
   const hasMakers = makerCount > 0;
 
   // Start with makers view by default so it doesn't flash calendar on load
@@ -28,6 +36,8 @@ export default function useDisplayOrchestrator(makerCount, totalPages = 1, hasFe
   const timerRef = useRef(null);
   const totalPagesRef = useRef(totalPages);
   totalPagesRef.current = totalPages;
+  const durationsRef = useRef({ makerDurationMs, calendarDurationMs });
+  durationsRef.current = { makerDurationMs, calendarDurationMs };
 
   // ── Clear any running rotation timer ──────────────────────────
   const clearRotationTimer = useCallback(() => {
@@ -41,7 +51,8 @@ export default function useDisplayOrchestrator(makerCount, totalPages = 1, hasFe
   const scheduleNext = useCallback((view) => {
     clearRotationTimer();
 
-    const duration = view === VIEWS.MAKERS ? (MAKER_DURATION * totalPagesRef.current) : CALENDAR_DURATION;
+    const { makerDurationMs, calendarDurationMs } = durationsRef.current;
+    const duration = view === VIEWS.MAKERS ? (makerDurationMs * totalPagesRef.current) : calendarDurationMs;
 
     timerRef.current = setTimeout(() => {
       const nextView = view === VIEWS.MAKERS ? VIEWS.CALENDAR : VIEWS.MAKERS;

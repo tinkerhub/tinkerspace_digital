@@ -13,8 +13,8 @@ const child = spawn(
       ...process.env,
       // This launcher must override checked-in/local .env values so it always exercises mock data.
       REACT_APP_API_BASE_URL: `http://localhost:${mockPort}`,
-      // Matches the spaceId 1 fixtures seeded in mock-server/data.js.
-      REACT_APP_SPACE_ID: process.env.REACT_APP_SPACE_ID || '1',
+      // Space assignment now comes from Supabase (screens table), not env —
+      // REACT_APP_SUPABASE_URL/ANON_KEY still come through from process.env.
     },
   }
 );

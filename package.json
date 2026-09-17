@@ -9,13 +9,20 @@
     "pnpm": ">=11"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-select": "^2.3.7",
+    "@supabase/supabase-js": "^2.116.0",
+    "clsx": "^2.1.1",
     "lottie-react": "^2.4.1",
+    "lucide-react": "^1.43.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.3",
     "react-scripts": "^5.0.1",
     "react-slick": "^0.31.0",
     "react-snowfall": "^2.2.0",
-    "slick-carousel": "^1.8.1"
+    "slick-carousel": "^1.8.1",
+    "tailwind-merge": "^3.6.0"
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
@@ -25,7 +32,10 @@
     "build": "react-scripts build",
     "build:mock": "node scripts/react-scripts-with-mocks.js build",
     "test": "react-scripts test",
-    "deploy": "pnpm run build && gh-pages -d build"
+    "deploy": "pnpm run build && gh-pages -d build",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:push": "supabase db push"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +59,7 @@
     "@babel/plugin-transform-private-property-in-object": "^7.29.7",
     "eslint-config-react-app": "^7.0.1",
     "gh-pages": "^6.3.0",
-    "only-allow": "^1.2.2"
+    "only-allow": "^1.2.2",
+    "supabase": "^2.117.0"
   }
 }

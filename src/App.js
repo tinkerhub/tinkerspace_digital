@@ -147,7 +147,7 @@ function App() {
         return () => cancelAnimationFrame(animationFrameId);
     }, []);
 
-    if (screenStatus === 'unclaimed') {
+    if (screenStatus === 'unclaimed' || screenStatus === 'unconfigured') {
         return <UnclaimedScreen code={screenCode} />;
     }
 

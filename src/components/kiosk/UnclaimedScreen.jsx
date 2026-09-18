@@ -6,10 +6,18 @@ export default function UnclaimedScreen({ code }) {
       <div className="animate-pulse text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
         Waiting for setup
       </div>
-      <div className="mt-4 text-6xl font-bold tracking-wider">#{code}</div>
-      <p className="mt-6 max-w-xs text-center text-sm text-gray-500 dark:text-gray-400">
-        Open the admin dashboard on any device and claim this screen using the code above.
-      </p>
+      {code ? (
+        <>
+          <div className="mt-4 text-6xl font-bold tracking-wider">#{code}</div>
+          <p className="mt-6 max-w-xs text-center text-sm text-gray-500 dark:text-gray-400">
+            Contact your TinkerSpace Manager to set up this screen.
+          </p>
+        </>
+      ) : (
+        <p className="mt-6 max-w-xs text-center text-sm text-gray-500 dark:text-gray-400">
+          This screen isn't set up yet. Contact your TinkerSpace Manager.
+        </p>
+      )}
     </div>
   );
 }

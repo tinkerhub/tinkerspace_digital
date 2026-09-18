@@ -32,7 +32,11 @@ export default function useScreenConfig() {
   });
 
   useEffect(() => {
-    if (!supabase || !isLikelyKiosk()) {
+    if (!supabase) {
+      setState((prev) => ({ ...prev, status: 'unconfigured' }));
+      return;
+    }
+    if (!isLikelyKiosk()) {
       return; // stays 'pending' — renders normally, never registers
     }
 

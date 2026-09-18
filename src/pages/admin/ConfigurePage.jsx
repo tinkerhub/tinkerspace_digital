@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Smartphone, Laptop, Monitor, Tv } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
@@ -7,6 +7,31 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../components/ui/select';
+import { classifyDevice } from '../../utils/deviceType';
+
+const DEVICE_BADGE = {
+  mobile: { icon: Smartphone, label: 'Mobile' },
+  laptop: { icon: Laptop, label: 'Laptop' },
+  desktop: { icon: Monitor, label: 'Desktop' },
+  tv: { icon: Tv, label: 'TV' },
+};
+
+function DeviceBadge({ screen }) {
+  const kind = classifyDevice({
+    userAgent: screen.user_agent,
+    width: screen.screen_width,
+    devicePixelRatio: screen.device_pixel_ratio,
+  });
+  const badge = DEVICE_BADGE[kind];
+  if (!badge) return <span className="text-gray-400">—</span>;
+  const Icon = badge.icon;
+  const title = `${screen.screen_width ?? '?'}×${screen.screen_height ?? '?'} · DPR ${screen.device_pixel_ratio ?? '?'} · ${screen.user_agent ?? 'unknown UA'}`;
+  return (
+    <span className="inline-flex items-center gap-1 text-sm" title={title}>
+      <Icon size={14} /> {badge.label}
+    </span>
+  );
+}
 
 export default function ConfigurePage() {
   const [spaces, setSpaces] = useState([]);
@@ -90,7 +115,14 @@ export default function ConfigurePage() {
   };
 
   const handleDeleteScreen = async (screenId) => {
+    if (!window.confirm('Delete this screen?')) return;
     await supabase.from('screens').delete().eq('id', screenId);
+    loadAll();
+  };
+
+  const handleClearUnclaimed = async () => {
+    if (!window.confirm(`Delete all ${unclaimedScreens.length} unclaimed screens?`)) return;
+    await supabase.from('screens').delete().in('id', unclaimedScreens.map((s) => s.id));
     loadAll();
   };
 
@@ -179,8 +211,13 @@ export default function ConfigurePage() {
 
       {/* Unclaimed screens */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Unclaimed screens</CardTitle>
+          {unclaimedScreens.length > 0 && (
+            <Button variant="outline" onClick={handleClearUnclaimed}>
+              <Trash2 size={14} /> Clear all
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {unclaimedScreens.length === 0 ? (
@@ -192,6 +229,7 @@ export default function ConfigurePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Code</TableHead>
+                  <TableHead>Device</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Space</TableHead>
                   <TableHead />
@@ -203,6 +241,9 @@ export default function ConfigurePage() {
                   return (
                     <TableRow key={screen.id}>
                       <TableCell className="font-mono font-bold">#{screen.id.slice(-5).toUpperCase()}</TableCell>
+                      <TableCell>
+                        <DeviceBadge screen={screen} />
+                      </TableCell>
                       <TableCell>
                         <Input
                           placeholder="Screen name"
@@ -231,9 +272,12 @@ export default function ConfigurePage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex gap-2">
                         <Button onClick={() => handleClaim(screen.id)} disabled={!draft.name || !draft.spaceId}>
                           Claim
+                        </Button>
+                        <Button variant="destructive" onClick={() => handleDeleteScreen(screen.id)}>
+                          <Trash2 size={14} />
                         </Button>
                       </TableCell>
                     </TableRow>

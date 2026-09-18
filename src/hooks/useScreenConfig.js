@@ -63,6 +63,13 @@ export default function useScreenConfig() {
     };
 
     async function registerAndLoad() {
+      const deviceInfo = {
+        user_agent: navigator.userAgent,
+        screen_width: window.screen.width,
+        screen_height: window.screen.height,
+        device_pixel_ratio: window.devicePixelRatio,
+      };
+
       const { data: existing } = await supabase
         .from('screens')
         .select('*')
@@ -70,12 +77,15 @@ export default function useScreenConfig() {
         .maybeSingle();
 
       if (existing) {
-        await supabase.from('screens').update({ last_seen: new Date().toISOString() }).eq('id', screenId);
+        await supabase
+          .from('screens')
+          .update({ last_seen: new Date().toISOString(), ...deviceInfo })
+          .eq('id', screenId);
         applyScreenRow(existing);
       } else {
         const { data: created } = await supabase
           .from('screens')
-          .insert({ id: screenId, status: 'unclaimed' })
+          .insert({ id: screenId, status: 'unclaimed', ...deviceInfo })
           .select()
           .single();
         applyScreenRow(created);

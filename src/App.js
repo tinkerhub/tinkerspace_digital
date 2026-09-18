@@ -6,9 +6,11 @@ import DISPLAY_CONFIG from './utils/constants/displayConfig';
 import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
 import useGridLayout from './hooks/useGridLayout';
 import useScreenConfig from './hooks/useScreenConfig';
+import useCalendarData from './hooks/useCalendarData';
 import Header from './components/layout/Header';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
 import CalendarDashboard from './components/layout/CalendarDashboard';
+import FallbackScreen from './components/layout/FallbackScreen';
 import TinkerHubMascot from './components/mascot/TinkerHubMascot';
 import UnclaimedScreen from './components/kiosk/UnclaimedScreen';
 
@@ -28,18 +30,47 @@ function App() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [manualTheme, setManualTheme] = useState(null);
 
-    // Calculate layout here to determine totalPages for orchestrator
-    const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
-    const cardsPerPage = getMakerCardsPerPage(cols, rows);
-    const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
-
     // ── Screen identity / admin-configured space + durations ──────
-    const { status: screenStatus, code: screenCode, spaceId, calendarDurationMs, makerDurationMs } = useScreenConfig();
+    const {
+        status: screenStatus,
+        code: screenCode,
+        spaceId,
+        calendarDurationMs,
+        makersDurationMs,
+        calendarEnabled,
+        makersEnabled,
+        makersPerRow,
+        minSlotMs,
+    } = useScreenConfig();
+
+    // Calculate layout here to determine makerPages for the orchestrator —
+    // cols is now the resolved makersPerRow (density config), not purely
+    // viewport-derived.
+    const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP, makersPerRow);
+    const cardsPerPage = getMakerCardsPerPage(cols, rows);
+    const makerPages = Math.ceil(data.length / cardsPerPage) || 1;
+
+    // ── Calendar data (lifted up from CalendarDashboard so its event count
+    // is visible here for the orchestrator, without a second fetch/poll) ──
+    const { calendarEvents, ...calendarViewData } = useCalendarData(spaceId);
+    const [calendarPages, setCalendarPages] = useState(1);
 
     // ── Display Orchestration Engine ─────────────────────────────
-    const { currentView } = useDisplayOrchestrator(data.length, totalPages, hasFetched, makerDurationMs, calendarDurationMs);
+    const { currentView } = useDisplayOrchestrator({
+        makerCount: data.length,
+        makerPages,
+        calendarEventCount: calendarEvents.length,
+        calendarPages,
+        hasFetched,
+        calendarEnabled,
+        makersEnabled,
+        makersDurationMs,
+        calendarDurationMs,
+        minSlotMs,
+    });
     const showMakers = currentView === VIEWS.MAKERS;
     const showCalendar = currentView === VIEWS.CALENDAR;
+    const showFallback = currentView === VIEWS.FALLBACK;
 
     useEffect(() => {
         // Keep screen awake
@@ -194,7 +225,12 @@ function App() {
                                 showMakers ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                         >
-                            <PaginatedCardGrid data={data} isActive={showMakers} />
+                            <PaginatedCardGrid
+                                data={data}
+                                isActive={showMakers}
+                                makersPerRow={makersPerRow}
+                                makersDurationMs={makersDurationMs}
+                            />
                         </div>
 
                         {/* ── Display Orchestration: Calendar View ───────── */}
@@ -203,7 +239,21 @@ function App() {
                                 showCalendar ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                         >
-                            <CalendarDashboard spaceId={spaceId} />
+                            <CalendarDashboard
+                                {...calendarViewData}
+                                calendarEvents={calendarEvents}
+                                calendarDurationMs={calendarDurationMs}
+                                onPagesChange={setCalendarPages}
+                            />
+                        </div>
+
+                        {/* ── Display Orchestration: Fallback (nothing to show) ── */}
+                        <div
+                            className={`absolute inset-0 flex flex-col transition-opacity duration-700 ease-in-out ${
+                                showFallback ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                            }`}
+                        >
+                            <FallbackScreen />
                         </div>
                     </div>
                 </div>

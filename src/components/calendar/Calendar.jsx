@@ -17,7 +17,7 @@ import { CALENDAR_VIEW_MODE } from '../../config/calendarConfig';
  *   className?: string
  * }} props
  */
-const Calendar = ({ events = [], currentDate, className = '' }) => {
+const Calendar = ({ events = [], currentDate, className = '', calendarDurationMs, onPagesChange }) => {
   const displayDate = currentDate || new Date();
 
   return (
@@ -28,7 +28,12 @@ const Calendar = ({ events = [], currentDate, className = '' }) => {
 
       {events.length > 0 ? (
         CALENDAR_VIEW_MODE === 'kanban' ? (
-          <CalendarKanban currentDate={displayDate} events={events} />
+          <CalendarKanban
+            currentDate={displayDate}
+            events={events}
+            calendarDurationMs={calendarDurationMs}
+            onPagesChange={onPagesChange}
+          />
         ) : (
           <CalendarGrid currentDate={displayDate} events={events} />
         )

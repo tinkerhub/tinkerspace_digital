@@ -14,7 +14,7 @@ const PURPOSE_COLORS = {
   'default': '#FFF3B0' // Soft Yellow
 };
 
-const UserCard = ({ card, CARD_HEIGHT }) => {
+const UserCard = ({ card }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef(null);
   const containerRef = useRef(null);
@@ -35,10 +35,7 @@ const UserCard = ({ card, CARD_HEIGHT }) => {
   return (
     <div 
       className="bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-lg border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden flex flex-col items-center transition-all duration-300"
-      style={{
-        width: '100%',
-        height: `${CARD_HEIGHT}px`
-      }}
+      style={{ width: '100%', height: '100%' }}
     >
       <UserImage
         src={card.avatar}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { resolveSetting } from '../utils/resolveSetting';
 
 const SCREEN_ID_KEY = 'tinkerspace_screen_id';
 
@@ -22,14 +23,22 @@ function getOrCreateScreenId() {
  * Supabase Realtime. This replaces the old env-driven spaceConfig.js seam —
  * an admin dashboard now controls this instead of a build-time env var.
  */
+const DEFAULT_STATE = {
+  status: 'pending',
+  code: null,
+  spaceId: null,
+  calendarDurationMs: 10_000,
+  makersDurationMs: 20_000,
+  calendarEnabled: true,
+  makersEnabled: true,
+  makersPerRow: 4,
+  minSlotMs: 5000,
+  makersPerRowMin: 2,
+  makersPerRowMax: 6,
+};
+
 export default function useScreenConfig() {
-  const [state, setState] = useState({
-    status: 'pending',
-    code: null,
-    spaceId: null,
-    calendarDurationMs: 10_000,
-    makerDurationMs: 20_000,
-  });
+  const [state, setState] = useState(DEFAULT_STATE);
 
   useEffect(() => {
     if (!supabase) {
@@ -42,24 +51,51 @@ export default function useScreenConfig() {
 
     const screenId = getOrCreateScreenId();
     let cancelled = false;
+    // Screen row and global settings row can each arrive/update independently
+    // (separate realtime subscriptions below) — keep both halves and re-merge
+    // on every change, rather than resolving once at load time.
+    let screenRow = null;
+    let settingsRow = null;
 
-    const applyScreenRow = (row) => {
-      if (cancelled || !row) return;
+    const resolveAndApply = () => {
+      if (cancelled || (!screenRow && !settingsRow)) return;
       setState((prev) => ({
         ...prev,
-        status: row.status === 'claimed' ? 'claimed' : 'unclaimed',
-        code: screenId.slice(-5).toUpperCase(),
-        spaceId: row.space_id,
+        status: screenRow ? (screenRow.status === 'claimed' ? 'claimed' : 'unclaimed') : prev.status,
+        code: screenRow ? screenId.slice(-5).toUpperCase() : prev.code,
+        spaceId: screenRow ? screenRow.space_id : prev.spaceId,
+        calendarDurationMs: resolveSetting(
+          screenRow?.calendar_duration_ms,
+          settingsRow?.calendar_duration_ms ?? prev.calendarDurationMs
+        ),
+        // settings.maker_duration_ms is the pre-existing (singular) column name;
+        // the new per-screen override column is plural (makers_duration_ms).
+        makersDurationMs: resolveSetting(
+          screenRow?.makers_duration_ms,
+          settingsRow?.maker_duration_ms ?? prev.makersDurationMs
+        ),
+        calendarEnabled: resolveSetting(screenRow?.calendar_enabled, true),
+        makersEnabled: resolveSetting(screenRow?.makers_enabled, true),
+        makersPerRow: resolveSetting(
+          screenRow?.makers_per_row,
+          settingsRow?.makers_per_row_min ?? prev.makersPerRow
+        ),
+        minSlotMs: settingsRow?.min_slot_ms ?? prev.minSlotMs,
+        makersPerRowMin: settingsRow?.makers_per_row_min ?? prev.makersPerRowMin,
+        makersPerRowMax: settingsRow?.makers_per_row_max ?? prev.makersPerRowMax,
       }));
     };
 
+    const applyScreenRow = (row) => {
+      if (!row) return;
+      screenRow = row;
+      resolveAndApply();
+    };
+
     const applySettingsRow = (row) => {
-      if (cancelled || !row) return;
-      setState((prev) => ({
-        ...prev,
-        calendarDurationMs: row.calendar_duration_ms,
-        makerDurationMs: row.maker_duration_ms,
-      }));
+      if (!row) return;
+      settingsRow = row;
+      resolveAndApply();
     };
 
     async function registerAndLoad() {

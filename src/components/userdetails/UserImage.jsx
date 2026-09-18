@@ -5,10 +5,10 @@ export default function CardImage({ src, alt, purpose, purposeColor }) {
   const firstLetter = alt ? alt.charAt(0).toUpperCase() : '?';
 
   return (
-    <div className="w-full h-[210px] overflow-hidden relative border-b border-gray-100 bg-gray-50 rounded-t-lg">
+    <div className="w-full aspect-square overflow-hidden relative border-b border-gray-100 bg-gray-50 rounded-t-lg">
       {(!src || imageError) ? (
         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-          <span className="text-6xl font-bold">{firstLetter}</span>
+          <span className="text-[clamp(1.5rem,5vw,3.75rem)] font-bold">{firstLetter}</span>
         </div>
       ) : (
         <img

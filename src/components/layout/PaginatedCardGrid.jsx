@@ -3,17 +3,21 @@ import CardItem from '../cards/UserCard';
 import useGridLayout from '../../hooks/useGridLayout';
 import { getMakerCardsPerPage } from '../../utils/layout/makerGrid';
 
+// Original design size — sets the card's aspect ratio, estimates how many
+// rows fit vertically, and caps how big a card can render: width is relative
+// (1fr columns, shrinks to fit more per row) but never grows past this.
 const CARD_WIDTH = 211;
 const CARD_HEIGHT = 257;
 const GAP = 32;
-const PAGE_INTERVAL = 20000;
+const DEFAULT_PAGE_INTERVAL = 20000;
 
-export default function PaginatedCardGrid({ data, isActive = true }) {
-  const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
+export default function PaginatedCardGrid({ data, isActive = true, makersPerRow, makersDurationMs }) {
+  const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP, makersPerRow);
   const totalSlots = cols * rows;
   // Keep the bottom-right grid cell clear for the fixed mascot overlay.
   const cardsPerPage = getMakerCardsPerPage(cols, rows);
   const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
+  const pageInterval = makersDurationMs || DEFAULT_PAGE_INTERVAL;
   const [page, setPage] = useState(0);
   const intervalRef = useRef();
 
@@ -28,53 +32,58 @@ export default function PaginatedCardGrid({ data, isActive = true }) {
 
     intervalRef.current = setInterval(() => {
       setPage((p) => {
-        // Stop at the last page instead of looping back to 0, 
+        // Stop at the last page instead of looping back to 0,
         // because the orchestrator will transition to the calendar view.
         if (p + 1 >= totalPages) return p;
         return p + 1;
       });
-    }, PAGE_INTERVAL);
-    
+    }, pageInterval);
+
     return () => clearInterval(intervalRef.current);
-  }, [totalPages, isActive]);
+  }, [totalPages, isActive, pageInterval]);
 
   const start = page * cardsPerPage;
   const end = start + cardsPerPage;
   const pageCards = data.slice(start, end);
-  const emptySlots = totalSlots - pageCards.length;
+
+  // Fewer cards than one row's width → don't stretch to fill it, show them
+  // at natural width instead (only column count shrinks; a partial *last*
+  // row on a fuller page still pads out to `cols` as before).
+  const displayCols = pageCards.length > 0 && pageCards.length < cols ? pageCards.length : cols;
+  const emptySlots = displayCols === cols ? totalSlots - pageCards.length : 0;
+  const cardAspectRatio = `${CARD_WIDTH} / ${CARD_HEIGHT}`;
 
   return (
     <div className="flex flex-col w-full h-full relative font-mono">
-      <div 
+      <div
         className="flex-1 w-full flex justify-between content-start py-[clamp(1rem,2vh,1.5rem)] mt-[clamp(1rem,2vh,1.5rem)] px-12"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${cols}, ${CARD_WIDTH}px)`,
-          gridTemplateRows: `repeat(${rows}, ${CARD_HEIGHT}px)`,
-          justifyContent: 'space-between',
+          gridTemplateColumns: `repeat(${displayCols}, 1fr)`,
+          justifyContent: displayCols < cols ? 'start' : 'space-between',
+          justifyItems: 'center',
           alignContent: 'start',
+          columnGap: `${GAP}px`,
           rowGap: `${GAP}px`
         }}
       >
         {pageCards.map((card, index) => {
           return (
-            <div 
-              key={card.id || card.name || index} 
-              className="transition-opacity duration-500"
-              style={{
-                width: CARD_WIDTH,
-                height: CARD_HEIGHT
-              }}
+            <div
+              key={card.id || card.name || index}
+              className="transition-opacity duration-500 w-full"
+              style={{ aspectRatio: cardAspectRatio, maxWidth: `${CARD_WIDTH}px` }}
             >
-              <CardItem card={card} CARD_HEIGHT={CARD_HEIGHT} />
+              <CardItem card={card} />
             </div>
           );
         })}
         {Array.from({ length: emptySlots }).map((_, i) => {
           return (
-            <div 
-              key={`empty-${i}`} 
-              style={{ background: 'transparent', width: CARD_WIDTH, height: CARD_HEIGHT }} 
+            <div
+              key={`empty-${i}`}
+              className="w-full"
+              style={{ background: 'transparent', aspectRatio: cardAspectRatio, maxWidth: `${CARD_WIDTH}px` }}
             />
           );
         })}

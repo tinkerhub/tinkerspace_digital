@@ -2,11 +2,16 @@
  * TinkerHub public events API service
  *
  * Fetches every event across every org/space from the public TinkerHub
- * events endpoint, then narrows it down to this display's TinkerSpace and
- * shapes it for the calendar UI. Consumed by CalendarDashboard.jsx, which
+ * events endpoints, then narrows it down to this display's TinkerSpace and
+ * shapes it for the calendar UI. Consumed by useCalendarData.js, which
  * polls it every 5 minutes.
  *
- * Endpoint: GET /v1/public/event/all (no auth — path is public)
+ * Two endpoints, merged: /v1/public/event/all only returns current/future
+ * events — once an event's start time passes, it moves to a separate
+ * /v1/public/event/all/past endpoint (confirmed against a real response).
+ * Both are fetched so the current week's past days still have events.
+ *
+ * Endpoints: GET /v1/public/event/all, GET /v1/public/event/all/past (no auth — public)
  *
  * @module fetchCalendar
  */
@@ -28,8 +33,72 @@ const FALLBACK_RESPONSE = Object.freeze({
 });
 
 /**
- * Fetches the raw event list and returns the consolidated display payload
- * for the configured TinkerSpace.
+ * Fetches one page of raw events from the given path.
+ * Returns the raw event array, or null on any failure (network, timeout,
+ * HTTP error, non-JSON, malformed payload) — the caller decides whether
+ * that failure is fatal (primary feed) or can be treated as "no data"
+ * (supplementary feed).
+ */
+async function fetchEventPage(apiUrl, path, spaceId) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    // The API doesn't currently filter by spaceId server-side (it returns
+    // every space's events regardless), so this param is sent defensively
+    // for the day it does — the client-side filter in buildCalendarDisplay
+    // is what actually enforces it either way.
+    // The endpoint defaults to a 20-item page with no pagination metadata
+    // in the response, so a generous explicit limit is the only way to
+    // avoid silently dropping events.
+    const response = await fetch(
+      `${apiUrl}${path}?spaceId=${encodeURIComponent(spaceId)}&limit=1000`,
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+        signal: controller.signal,
+      }
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.error(`[fetchCalendar] HTTP ${response.status} on ${path} — ${response.statusText}`);
+      return null;
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error(`[fetchCalendar] Response is not JSON on ${path}. Content-Type:`, contentType);
+      return null;
+    }
+
+    const json = await response.json();
+
+    // The API wraps payloads in { status, data }. Guard against unexpected shapes.
+    if (!json || !json.status || !Array.isArray(json.data)) {
+      return null;
+    }
+
+    return json.data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (error.name === 'AbortError') {
+      console.error(`[fetchCalendar] Request to ${path} timed out after ${REQUEST_TIMEOUT_MS}ms`);
+    } else {
+      console.error(`[fetchCalendar] Fetch to ${path} failed:`, error.message);
+    }
+
+    return null;
+  }
+}
+
+/**
+ * Fetches the raw event lists (current + past) and returns the consolidated
+ * display payload for the configured TinkerSpace.
  *
  * Handles:
  *  - Missing / empty environment variables
@@ -66,69 +135,22 @@ export const fetchCalendarDisplay = async (spaceId) => {
     return FALLBACK_RESPONSE;
   }
 
-  // ── Timeout via AbortController ───────────────────────────────
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const [currentData, pastData] = await Promise.all([
+    fetchEventPage(API_URL, '/v1/public/event/all', spaceId),
+    fetchEventPage(API_URL, '/v1/public/event/all/past', spaceId),
+  ]);
 
-  try {
-    // The API doesn't currently filter by spaceId server-side (it returns
-    // every space's events regardless), so this param is sent defensively
-    // for the day it does — the client-side filter in buildCalendarDisplay
-    // is what actually enforces it either way.
-    // The endpoint defaults to a 20-item page with no pagination metadata
-    // in the response, so a generous explicit limit is the only way to
-    // avoid silently dropping events.
-    const response = await fetch(
-      `${API_URL}/v1/public/event/all?spaceId=${encodeURIComponent(spaceId)}&limit=1000`,
-      {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-        signal: controller.signal,
-      }
-    );
-
-    clearTimeout(timeoutId);
-
-    // ── Guard: HTTP errors ────────────────────────────────────
-    if (!response.ok) {
-      console.error(
-        `[fetchCalendar] HTTP ${response.status} — ${response.statusText}`
-      );
-      return FALLBACK_RESPONSE;
-    }
-
-    // ── Guard: content type ───────────────────────────────────
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error(
-        '[fetchCalendar] Response is not JSON. Content-Type:', contentType
-      );
-      return FALLBACK_RESPONSE;
-    }
-
-    // ── Parse JSON ────────────────────────────────────────────
-    const json = await response.json();
-
-    // The API wraps payloads in { status, data }.
-    // Guard against unexpected shapes.
-    if (!json || !json.status || !Array.isArray(json.data)) {
-      return FALLBACK_RESPONSE;
-    }
-
-    return buildCalendarDisplay(json.data, { spaceId });
-  } catch (error) {
-    clearTimeout(timeoutId);
-
-    if (error.name === 'AbortError') {
-      console.error(
-        `[fetchCalendar] Request timed out after ${REQUEST_TIMEOUT_MS}ms`
-      );
-    } else {
-      console.error('[fetchCalendar] Fetch failed:', error.message);
-    }
-
+  // The primary (current/upcoming) feed failing is a real failure — the
+  // supplementary past feed failing just means this week's past days won't
+  // show, everything else still works.
+  if (currentData === null) {
     return FALLBACK_RESPONSE;
   }
+
+  const merged = new Map();
+  for (const event of [...currentData, ...(pastData ?? [])]) {
+    if (event && event.id != null) merged.set(event.id, event);
+  }
+
+  return buildCalendarDisplay([...merged.values()], { spaceId });
 };

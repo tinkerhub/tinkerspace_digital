@@ -12,16 +12,25 @@ import { normalizeCategory } from '../../components/calendar/EventBadge';
  * unchanged: it just becomes a redundant (harmless) second pass.
  */
 
-const STALE_AFTER_MS = 24 * 60 * 60 * 1000; // drop events that ended more than a day ago
-
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+// Sunday-based, matches getWeekDays in calendarLayout.js.
+function startOfWeek(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay()).getTime();
+}
+
+function endOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 1).getTime() - 1;
 }
 
 export function buildCalendarDisplay(rawEvents, { spaceId, now = new Date() } = {}) {
   const events = Array.isArray(rawEvents) ? rawEvents : [];
   const nowMs = now.getTime();
   const today = startOfDay(now);
+  const weekStartMs = startOfWeek(now);
+  const monthEndMs = endOfMonth(now);
 
   const mapped = events
     .filter((event) => event && event.startDate)
@@ -50,13 +59,18 @@ export function buildCalendarDisplay(rawEvents, { spaceId, now = new Date() } = 
         endMs,
       };
     })
-    .filter((event) => nowMs - event.endMs < STALE_AFTER_MS)
+    // Keep everything from the start of the currently-displayed week onward
+    // (so this week's past days still show their events), drop older weeks.
+    .filter((event) => event.endMs >= weekStartMs)
     .sort((a, b) => a.startMs - b.startMs);
 
   const stripInternal = ({ startMs, endMs, ...rest }) => rest;
 
   const liveEvent = mapped.find((event) => event.status === 'ongoing') || null;
-  const upcomingEvents = mapped.filter((event) => event.status === 'upcoming');
+  // Upcoming is capped to the current calendar month — doesn't spill into next month.
+  const upcomingEvents = mapped.filter(
+    (event) => event.status === 'upcoming' && event.startMs <= monthEndMs
+  );
 
   return {
     live_event: liveEvent ? stripInternal(liveEvent) : null,

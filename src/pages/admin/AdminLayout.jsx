@@ -1,7 +1,13 @@
 import React from 'react';
-import { Settings, LogOut } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Monitor, Settings, LogOut } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { cn } from '../../lib/utils';
+
+const NAV_ITEMS = [
+  { to: '/admin', end: true, label: 'Screens', icon: Monitor },
+  { to: '/admin/settings', end: false, label: 'Settings', icon: Settings },
+];
 
 export default function AdminLayout({ children }) {
   return (
@@ -9,16 +15,23 @@ export default function AdminLayout({ children }) {
       {/* Sidebar */}
       <aside className="flex w-56 flex-shrink-0 flex-col border-r border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900">
         <div className="px-4 py-5 text-sm font-bold tracking-wide">TinkerSpace Admin</div>
-        <nav className="flex-1 px-2">
-          <div
-            className={cn(
-              'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
-              'bg-gray-100 dark:bg-white/10'
-            )}
-          >
-            <Settings size={16} />
-            Configure
-          </div>
+        <nav className="flex-1 flex flex-col gap-1 px-2">
+          {NAV_ITEMS.map(({ to, end, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium',
+                  isActive ? 'bg-gray-100 dark:bg-white/10' : 'hover:bg-gray-50 dark:hover:bg-white/5'
+                )
+              }
+            >
+              <Icon size={16} />
+              {label}
+            </NavLink>
+          ))}
         </nav>
         <button
           onClick={() => supabase.auth.signOut()}

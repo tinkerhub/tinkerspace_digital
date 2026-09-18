@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2, Smartphone, Laptop, Monitor, Tv } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/ui/table';
@@ -7,64 +8,28 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../components/ui/select';
-import { classifyDevice } from '../../utils/deviceType';
+import DeviceBadge from '../../components/admin/DeviceBadge';
 
-const DEVICE_BADGE = {
-  mobile: { icon: Smartphone, label: 'Mobile' },
-  laptop: { icon: Laptop, label: 'Laptop' },
-  desktop: { icon: Monitor, label: 'Desktop' },
-  tv: { icon: Tv, label: 'TV' },
-};
-
-function DeviceBadge({ screen }) {
-  const kind = classifyDevice({
-    userAgent: screen.user_agent,
-    width: screen.screen_width,
-    devicePixelRatio: screen.device_pixel_ratio,
-  });
-  const badge = DEVICE_BADGE[kind];
-  if (!badge) return <span className="text-gray-400">—</span>;
-  const Icon = badge.icon;
-  const title = `${screen.screen_width ?? '?'}×${screen.screen_height ?? '?'} · DPR ${screen.device_pixel_ratio ?? '?'} · ${screen.user_agent ?? 'unknown UA'}`;
-  return (
-    <span className="inline-flex items-center gap-1 text-sm" title={title}>
-      <Icon size={14} /> {badge.label}
-    </span>
-  );
-}
-
-export default function ConfigurePage() {
+export default function ScreensPage() {
   const [spaces, setSpaces] = useState([]);
-  const [settings, setSettings] = useState(null);
   const [unclaimedScreens, setUnclaimedScreens] = useState([]);
   const [claimedScreens, setClaimedScreens] = useState([]);
   const [claimDrafts, setClaimDrafts] = useState({}); // screenId -> { name, spaceId }
   const [newSpaceName, setNewSpaceName] = useState('');
   const [addSpaceOpen, setAddSpaceOpen] = useState(false);
-  const [durationDraft, setDurationDraft] = useState({ calendarSec: 10, makerSec: 20 });
 
   const loadAll = useCallback(async () => {
     const [
       { data: spacesData, error: spacesError },
-      { data: settingsData, error: settingsError },
       { data: screensData, error: screensError },
     ] = await Promise.all([
       supabase.from('spaces').select('*').order('id'),
-      supabase.from('settings').select('*').single(),
       supabase.from('screens').select('*').order('first_seen', { ascending: false }),
     ]);
     if (spacesError) console.error('spaces query failed:', spacesError);
-    if (settingsError) console.error('settings query failed:', settingsError);
     if (screensError) console.error('screens query failed:', screensError);
 
     setSpaces(spacesData ?? []);
-    if (settingsData) {
-      setSettings(settingsData);
-      setDurationDraft({
-        calendarSec: Math.round(settingsData.calendar_duration_ms / 1000),
-        makerSec: Math.round(settingsData.maker_duration_ms / 1000),
-      });
-    }
 
     const screens = screensData ?? [];
     setUnclaimedScreens(screens.filter((s) => s.status === 'unclaimed'));
@@ -88,17 +53,6 @@ export default function ConfigurePage() {
     loadAll();
   };
 
-  const handleSaveDurations = async () => {
-    await supabase
-      .from('settings')
-      .update({
-        calendar_duration_ms: durationDraft.calendarSec * 1000,
-        maker_duration_ms: durationDraft.makerSec * 1000,
-      })
-      .eq('id', true);
-    loadAll();
-  };
-
   const handleClaim = async (screenId) => {
     const draft = claimDrafts[screenId] || {};
     if (!draft.name || !draft.spaceId) return;
@@ -106,11 +60,6 @@ export default function ConfigurePage() {
       .from('screens')
       .update({ status: 'claimed', name: draft.name, space_id: draft.spaceId })
       .eq('id', screenId);
-    loadAll();
-  };
-
-  const handleReassign = async (screenId, spaceId) => {
-    await supabase.from('screens').update({ space_id: spaceId }).eq('id', screenId);
     loadAll();
   };
 
@@ -130,39 +79,7 @@ export default function ConfigurePage() {
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <h1 className="text-lg font-semibold">Configure</h1>
-
-      {/* Durations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Rotation durations</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-4">
-          <label className="flex flex-col gap-1 text-sm">
-            Calendar (seconds)
-            <Input
-              type="number"
-              min="1"
-              className="w-32"
-              value={durationDraft.calendarSec}
-              onChange={(e) => setDurationDraft((d) => ({ ...d, calendarSec: Number(e.target.value) }))}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Makers (seconds)
-            <Input
-              type="number"
-              min="1"
-              className="w-32"
-              value={durationDraft.makerSec}
-              onChange={(e) => setDurationDraft((d) => ({ ...d, makerSec: Number(e.target.value) }))}
-            />
-          </label>
-          <Button onClick={handleSaveDurations} disabled={!settings}>
-            Save
-          </Button>
-        </CardContent>
-      </Card>
+      <h1 className="text-lg font-semibold">Screens</h1>
 
       {/* Spaces */}
       <Card>
@@ -298,45 +215,33 @@ export default function ConfigurePage() {
           {claimedScreens.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">No screens claimed yet.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Space</TableHead>
-                  <TableHead>Last seen</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {claimedScreens.map((screen) => (
-                  <TableRow key={screen.id}>
-                    <TableCell>{screen.name}</TableCell>
-                    <TableCell>
-                      <Select value={String(screen.space_id)} onValueChange={(value) => handleReassign(screen.id, Number(value))}>
-                        <SelectTrigger className="w-40">
-                          <SelectValue>{spaceName(screen.space_id)}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {spaces.map((space) => (
-                            <SelectItem key={space.id} value={String(space.id)}>
-                              {space.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(screen.last_seen).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="destructive" onClick={() => handleDeleteScreen(screen.id)}>
-                        <Trash2 size={14} />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+              {claimedScreens.map((screen) => (
+                <div
+                  key={screen.id}
+                  className="group relative rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteScreen(screen.id);
+                    }}
+                    className="absolute right-2 top-2 rounded-md p-1.5 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 transition-opacity"
+                    aria-label="Delete screen"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                  <Link to={`/admin/screens/${screen.id}`} className="block">
+                    <div className="pr-6 font-semibold">{screen.name}</div>
+                    <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">{spaceName(screen.space_id)}</div>
+                    <div className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+                      Last seen {new Date(screen.last_seen).toLocaleString()}
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

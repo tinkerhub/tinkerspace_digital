@@ -1,45 +1,44 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import DISPLAY_CONFIG from '../utils/constants/displayConfig';
+import { computeSlot } from '../utils/rotation/computeSlot';
 
-const { VIEWS, MAKER_DURATION: DEFAULT_MAKER_DURATION, CALENDAR_DURATION: DEFAULT_CALENDAR_DURATION } = DISPLAY_CONFIG;
+const { VIEWS } = DISPLAY_CONFIG;
 
 /**
- * useDisplayOrchestrator — lightweight display controller.
+ * useDisplayOrchestrator — content-aware display controller.
  *
- * Determines which view (Makers or Calendar) should be rendered based
- * on maker availability and configurable rotation timing.
+ * Determines which view (Makers, Calendar, or a Fallback screen) should be
+ * rendered, based on per-component enable flags and live content counts.
  *
  * Rules:
- *   • makers.length === 0  →  Calendar always (no rotation)
- *   • makers.length > 0    →  Makers ↔ Calendar rotation
- *
- * When makers become available → joins rotation immediately.
- * When all makers leave      → stops rotation, shows Calendar immediately.
- *
- * @param {number} makerCount - Current number of active makers.
- * @param {number} [makerDurationMs] - Overrides the default maker view duration (e.g. from admin config).
- * @param {number} [calendarDurationMs] - Overrides the default calendar view duration (e.g. from admin config).
- * @returns {{ currentView: string }}
+ *   • Neither component has content (or both are disabled) → Fallback, no rotation.
+ *   • Only one is visible → force that view, no rotation.
+ *   • Both visible → ping-pong, each view's dwell time computed from its own
+ *     content via computeSlot (a single maker/event gets a short minSlotMs
+ *     glance; a full page gets up to its configured duration ceiling).
  */
-export default function useDisplayOrchestrator(
-  makerCount,
-  totalPages = 1,
+export default function useDisplayOrchestrator({
+  makerCount = 0,
+  makerPages = 1,
+  calendarEventCount = 0,
+  calendarPages = 1,
   hasFetched = false,
-  makerDurationMs = DEFAULT_MAKER_DURATION,
-  calendarDurationMs = DEFAULT_CALENDAR_DURATION
-) {
-  const hasMakers = makerCount > 0;
+  calendarEnabled = true,
+  makersEnabled = true,
+  makersDurationMs = DISPLAY_CONFIG.MAKER_DURATION,
+  calendarDurationMs = DISPLAY_CONFIG.CALENDAR_DURATION,
+  minSlotMs = 5000,
+}) {
+  const makersVisible = makersEnabled && makerCount > 0;
+  const calendarVisible = calendarEnabled && calendarEventCount > 0;
 
   // Start with makers view by default so it doesn't flash calendar on load
   const [currentView, setCurrentView] = useState(VIEWS.MAKERS);
 
   const timerRef = useRef(null);
-  const totalPagesRef = useRef(totalPages);
-  totalPagesRef.current = totalPages;
-  const durationsRef = useRef({ makerDurationMs, calendarDurationMs });
-  durationsRef.current = { makerDurationMs, calendarDurationMs };
+  const configRef = useRef({});
+  configRef.current = { makerCount, makerPages, calendarEventCount, calendarPages, makersDurationMs, calendarDurationMs, minSlotMs };
 
-  // ── Clear any running rotation timer ──────────────────────────
   const clearRotationTimer = useCallback(() => {
     if (timerRef.current !== null) {
       clearTimeout(timerRef.current);
@@ -51,8 +50,14 @@ export default function useDisplayOrchestrator(
   const scheduleNext = useCallback((view) => {
     clearRotationTimer();
 
-    const { makerDurationMs, calendarDurationMs } = durationsRef.current;
-    const duration = view === VIEWS.MAKERS ? (makerDurationMs * totalPagesRef.current) : calendarDurationMs;
+    const {
+      makerCount, makerPages, calendarEventCount, calendarPages,
+      makersDurationMs, calendarDurationMs, minSlotMs,
+    } = configRef.current;
+
+    const duration = view === VIEWS.MAKERS
+      ? computeSlot(makerCount, makerPages, minSlotMs, makersDurationMs)
+      : computeSlot(calendarEventCount, calendarPages, minSlotMs, calendarDurationMs);
 
     timerRef.current = setTimeout(() => {
       const nextView = view === VIEWS.MAKERS ? VIEWS.CALENDAR : VIEWS.MAKERS;
@@ -60,41 +65,44 @@ export default function useDisplayOrchestrator(
     }, duration);
   }, [clearRotationTimer]);
 
-  // ── React to maker availability changes ───────────────────────
+  // ── React to component visibility changes ─────────────────────
   useEffect(() => {
     if (!hasFetched) {
-      // Still loading data, don't force to calendar yet
+      // Still loading data, don't force a view yet
       return;
     }
 
-    if (!hasMakers) {
-      // No makers → immediately show calendar, stop rotation
+    if (!makersVisible && !calendarVisible) {
+      clearRotationTimer();
+      setCurrentView(VIEWS.FALLBACK);
+      return;
+    }
+    if (!makersVisible) {
       clearRotationTimer();
       setCurrentView(VIEWS.CALENDAR);
       return;
     }
+    if (!calendarVisible) {
+      clearRotationTimer();
+      setCurrentView(VIEWS.MAKERS);
+      return;
+    }
 
-    // Makers exist → ensure rotation is running.
-    // If we were on calendar (because no makers), switch to makers first.
-    setCurrentView((prev) => {
-      if (prev === VIEWS.CALENDAR) {
-        return VIEWS.MAKERS;
-      }
-      return prev;
-    });
-  }, [hasMakers, hasFetched, clearRotationTimer]);
+    // Both visible → resume/continue rotation from wherever we were,
+    // unless we're coming from the fallback screen.
+    setCurrentView((prev) => (prev === VIEWS.FALLBACK ? VIEWS.MAKERS : prev));
+  }, [makersVisible, calendarVisible, hasFetched, clearRotationTimer]);
 
-  // ── Start / restart the rotation timer whenever the view changes ─
+  // ── Start / restart the rotation timer only while both are visible ──
   useEffect(() => {
-    if (!hasMakers) {
-      // No rotation when there are no makers
+    if (!hasFetched || !makersVisible || !calendarVisible) {
       return;
     }
 
     scheduleNext(currentView);
 
     return () => clearRotationTimer();
-  }, [currentView, hasMakers, scheduleNext, clearRotationTimer]);
+  }, [currentView, hasFetched, makersVisible, calendarVisible, scheduleNext, clearRotationTimer]);
 
   return { currentView };
 }

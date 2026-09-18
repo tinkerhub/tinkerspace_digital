@@ -18,6 +18,8 @@ const DISPLAY_CONFIG = Object.freeze({
   VIEWS: Object.freeze({
     MAKERS: 'makers',
     CALENDAR: 'calendar',
+    // Neither component has content to show (or both are manually disabled).
+    FALLBACK: 'fallback',
   }),
 });
 

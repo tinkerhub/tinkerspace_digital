@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { fetchCalendarDisplay } from '../../utils/api/fetchCalendar';
+import React from 'react';
 import { Calendar, LiveEventCard, UpcomingEvents } from '../calendar';
 
 /**
@@ -13,80 +12,19 @@ import { Calendar, LiveEventCard, UpcomingEvents } from '../calendar';
  *   │                       │  Upcoming (×5)   │
  *   └──────────────────────────────────────────┘
  *
- * This component is the ONLY consumer of fetchCalendar.js.
+ * Presentational only — data comes from useCalendarData in App.js (lifted
+ * up so the rotation orchestrator can see calendar event counts without a
+ * second, independent fetch/poll cycle).
  */
-
-const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
-const CalendarDashboard = ({ spaceId }) => {
-  // ── State ──────────────────────────────────────────────────────
-  const [data, setData] = useState(null);            // null = never loaded
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const isFetchingRef = useRef(false);               // prevents duplicate requests
-  const hasLoadedRef = useRef(false);                 // tracks if we ever got good data
-  const intervalRef = useRef(null);
-
-  // ── Fetch logic ────────────────────────────────────────────────
-  const refresh = useCallback(async () => {
-    // Guard: don't stack concurrent requests
-    if (isFetchingRef.current) return;
-    isFetchingRef.current = true;
-
-    try {
-      const result = await fetchCalendarDisplay(spaceId);
-
-      // Only update state if we got meaningful data, or if we've
-      // never had a successful load (so empty states render).
-      const hasData = result.generated_at !== null;
-
-      if (hasData || !hasLoadedRef.current) {
-        setData(result);
-        if (hasData) {
-          hasLoadedRef.current = true;
-        }
-      }
-      // If the fetch returned fallback (generated_at === null) but we
-      // already have data, we silently keep the previous data.
-    } catch {
-      // fetchCalendarDisplay never throws, but just in case:
-      // swallow and keep the previous state.
-    } finally {
-      isFetchingRef.current = false;
-      setIsInitialLoad(false);
-    }
-  }, [spaceId]);
-
-  // ── Mount + spaceId changes: refetch immediately, then poll ─────
-  useEffect(() => {
-    refresh();
-
-    intervalRef.current = setInterval(refresh, POLL_INTERVAL_MS);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [refresh]);
-
-  // ── Derived values (memoised) ──────────────────────────────────
-  var generatedAt = data && data.generated_at;
-
-  var currentDate = useMemo(function () {
-    if (generatedAt) {
-      return new Date(generatedAt);
-    }
-    return new Date();
-  }, [generatedAt]);
-
-  const calendarEvents = useMemo(() => data?.calendar ?? [], [data?.calendar]);
-  const liveEvent = useMemo(() => data?.live_event ?? null, [data?.live_event]);
-  const upcomingEvents = useMemo(
-    () => (data?.upcoming_events ?? []).filter(event => new Date(event.starts_at) > currentDate),
-    [data?.upcoming_events, currentDate]
-  );
-
+const CalendarDashboard = ({
+  isInitialLoad,
+  currentDate,
+  calendarEvents,
+  liveEvent,
+  upcomingEvents,
+  calendarDurationMs,
+  onPagesChange,
+}) => {
   // ── Render: initial loading state ──────────────────────────────
   if (isInitialLoad) {
     return (
@@ -111,6 +49,8 @@ const CalendarDashboard = ({ spaceId }) => {
           events={calendarEvents}
           currentDate={currentDate}
           className="h-full"
+          calendarDurationMs={calendarDurationMs}
+          onPagesChange={onPagesChange}
         />
       </div>
 
@@ -130,4 +70,3 @@ const CalendarDashboard = ({ spaceId }) => {
 };
 
 export default React.memo(CalendarDashboard);
-

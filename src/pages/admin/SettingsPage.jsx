@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
+import { useToast } from '../../components/ui/toast';
+import useAutosave from '../../hooks/useAutosave';
 
 const DEFAULT_DRAFT = {
   calendarSec: 10,
@@ -15,6 +16,7 @@ const DEFAULT_DRAFT = {
 export default function SettingsPage() {
   const [settings, setSettings] = useState(null);
   const [draft, setDraft] = useState(DEFAULT_DRAFT);
+  const showToast = useToast();
 
   const load = async () => {
     const { data, error } = await supabase.from('settings').select('*').single();
@@ -37,7 +39,7 @@ export default function SettingsPage() {
   }, []);
 
   const handleSave = async () => {
-    await supabase
+    const { error } = await supabase
       .from('settings')
       .update({
         calendar_duration_ms: draft.calendarSec * 1000,
@@ -47,8 +49,18 @@ export default function SettingsPage() {
         min_slot_ms: draft.minSlotSec * 1000,
       })
       .eq('id', true);
+    if (error) {
+      showToast('Failed to save settings', 'error');
+      return;
+    }
+    showToast('Settings saved');
     load();
   };
+
+  useAutosave(
+    handleSave,
+    [draft.calendarSec, draft.makersSec, draft.makersPerRowMin, draft.makersPerRowMax, draft.minSlotSec]
+  );
 
   const field = (key, num = true) => ({
     value: draft[key],
@@ -66,27 +78,24 @@ export default function SettingsPage() {
         <CardContent className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-sm">
             Calendar duration ceiling (seconds)
-            <Input type="number" min="1" className="w-40" {...field('calendarSec')} />
+            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('calendarSec')} />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             Makers duration ceiling (seconds)
-            <Input type="number" min="1" className="w-40" {...field('makersSec')} />
+            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('makersSec')} />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             Min slot (seconds)
-            <Input type="number" min="1" className="w-40" {...field('minSlotSec')} />
+            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('minSlotSec')} />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             Makers per row — min
-            <Input type="number" min="1" className="w-40" {...field('makersPerRowMin')} />
+            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('makersPerRowMin')} />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             Makers per row — max
-            <Input type="number" min="1" className="w-40" {...field('makersPerRowMax')} />
+            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('makersPerRowMax')} />
           </label>
-          <Button onClick={handleSave} disabled={!settings}>
-            Save
-          </Button>
         </CardContent>
       </Card>
     </div>

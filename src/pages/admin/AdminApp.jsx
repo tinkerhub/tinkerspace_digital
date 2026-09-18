@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import Login from './Login';
 import ProtectedRoute from './ProtectedRoute';
@@ -16,6 +16,13 @@ function ProtectedPage({ children }) {
   );
 }
 
+// Keyed by :id so navigating between two different screens' detail pages
+// remounts fresh (fresh autosave state) instead of reusing the same instance.
+function ScreenDetailRoute() {
+  const { id } = useParams();
+  return <ScreenDetailPage key={id} />;
+}
+
 export default function AdminApp() {
   if (!supabase) {
     return (
@@ -30,7 +37,7 @@ export default function AdminApp() {
     <Routes>
       <Route path="login" element={<Login />} />
       <Route path="" element={<ProtectedPage><ScreensPage /></ProtectedPage>} />
-      <Route path="screens/:id" element={<ProtectedPage><ScreenDetailPage /></ProtectedPage>} />
+      <Route path="screens/:id" element={<ProtectedPage><ScreenDetailRoute /></ProtectedPage>} />
       <Route path="settings" element={<ProtectedPage><SettingsPage /></ProtectedPage>} />
       <Route path="*" element={<Navigate to="" replace />} />
     </Routes>

@@ -6,7 +6,9 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../components/ui/select';
 import { Switch } from '../../components/ui/switch';
+import { useToast } from '../../components/ui/toast';
 import DeviceBadge from '../../components/admin/DeviceBadge';
+import useAutosave from '../../hooks/useAutosave';
 
 // raw !=null → this screen already overrides the field (override on).
 // raw ==null → inherits; `fallback` is the resolved global value to show
@@ -58,6 +60,7 @@ function NumberOverrideRow({ label, unit, state, onChange, min, max }) {
 export default function ScreenDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const [screen, setScreen] = useState(null);
   const [spaces, setSpaces] = useState([]);
@@ -108,7 +111,7 @@ export default function ScreenDetailPage() {
   }, [id]);
 
   const handleSave = async () => {
-    await supabase
+    const { error } = await supabase
       .from('screens')
       .update({
         name,
@@ -122,8 +125,26 @@ export default function ScreenDetailPage() {
         makers_per_row: makersPerRow.override ? makersPerRow.value : null,
       })
       .eq('id', id);
+    if (error) {
+      showToast('Failed to save screen', 'error');
+      return;
+    }
+    showToast('Screen updated');
     load();
   };
+
+  useAutosave(handleSave, [
+    name,
+    spaceId,
+    calendarEnabled,
+    makersEnabled,
+    calendarDurationSec.override,
+    calendarDurationSec.value,
+    makersDurationSec.override,
+    makersDurationSec.value,
+    makersPerRow.override,
+    makersPerRow.value,
+  ]);
 
   const handleDelete = async () => {
     if (!window.confirm('Delete this screen?')) return;
@@ -236,10 +257,6 @@ export default function ScreenDetailPage() {
           />
         </CardContent>
       </Card>
-
-      <Button onClick={handleSave} className="self-start">
-        Save changes
-      </Button>
 
       <Card>
         <CardHeader>

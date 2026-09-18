@@ -8,9 +8,6 @@ import useAutosave from '../../hooks/useAutosave';
 const DEFAULT_DRAFT = {
   calendarSec: 10,
   makersSec: 20,
-  makersPerRowMin: 2,
-  makersPerRowMax: 6,
-  minSlotSec: 5,
 };
 
 export default function SettingsPage() {
@@ -28,9 +25,6 @@ export default function SettingsPage() {
     setDraft({
       calendarSec: Math.round(data.calendar_duration_ms / 1000),
       makersSec: Math.round(data.maker_duration_ms / 1000),
-      makersPerRowMin: data.makers_per_row_min,
-      makersPerRowMax: data.makers_per_row_max,
-      minSlotSec: Math.round(data.min_slot_ms / 1000),
     });
   };
 
@@ -44,9 +38,6 @@ export default function SettingsPage() {
       .update({
         calendar_duration_ms: draft.calendarSec * 1000,
         maker_duration_ms: draft.makersSec * 1000,
-        makers_per_row_min: draft.makersPerRowMin,
-        makers_per_row_max: draft.makersPerRowMax,
-        min_slot_ms: draft.minSlotSec * 1000,
       })
       .eq('id', true);
     if (error) {
@@ -57,10 +48,7 @@ export default function SettingsPage() {
     load();
   };
 
-  useAutosave(
-    handleSave,
-    [draft.calendarSec, draft.makersSec, draft.makersPerRowMin, draft.makersPerRowMax, draft.minSlotSec]
-  );
+  useAutosave(handleSave, [draft.calendarSec, draft.makersSec]);
 
   const field = (key, num = true) => ({
     value: draft[key],
@@ -73,7 +61,7 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Global rotation & density</CardTitle>
+          <CardTitle>Global rotation</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-sm">
@@ -83,18 +71,6 @@ export default function SettingsPage() {
           <label className="flex flex-col gap-1 text-sm">
             Makers duration ceiling (seconds)
             <Input type="number" min="1" className="w-40" disabled={!settings} {...field('makersSec')} />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Min slot (seconds)
-            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('minSlotSec')} />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Makers per row — min
-            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('makersPerRowMin')} />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Makers per row — max
-            <Input type="number" min="1" className="w-40" disabled={!settings} {...field('makersPerRowMax')} />
           </label>
         </CardContent>
       </Card>

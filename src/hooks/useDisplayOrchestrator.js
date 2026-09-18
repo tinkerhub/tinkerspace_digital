@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import DISPLAY_CONFIG from '../utils/constants/displayConfig';
-import { computeSlot } from '../utils/rotation/computeSlot';
 
 const { VIEWS } = DISPLAY_CONFIG;
 
@@ -13,9 +12,11 @@ const { VIEWS } = DISPLAY_CONFIG;
  * Rules:
  *   • Neither component has content (or both are disabled) → Fallback, no rotation.
  *   • Only one is visible → force that view, no rotation.
- *   • Both visible → ping-pong, each view's dwell time computed from its own
- *     content via computeSlot (a single maker/event gets a short minSlotMs
- *     glance; a full page gets up to its configured duration ceiling).
+ *   • Both visible → ping-pong, each view's dwell time is its resolved
+ *     duration (screen override, else global) times its own page count, so
+ *     multi-page content gets to show every page before flipping away.
+ *     Changing the resolved duration or page count live (e.g. an admin edit)
+ *     immediately reschedules the in-flight timer with the new value.
  */
 export default function useDisplayOrchestrator({
   makerCount = 0,
@@ -27,7 +28,6 @@ export default function useDisplayOrchestrator({
   makersEnabled = true,
   makersDurationMs = DISPLAY_CONFIG.MAKER_DURATION,
   calendarDurationMs = DISPLAY_CONFIG.CALENDAR_DURATION,
-  minSlotMs = 5000,
 }) {
   const makersVisible = makersEnabled && makerCount > 0;
   const calendarVisible = calendarEnabled && calendarEventCount > 0;
@@ -36,8 +36,6 @@ export default function useDisplayOrchestrator({
   const [currentView, setCurrentView] = useState(VIEWS.MAKERS);
 
   const timerRef = useRef(null);
-  const configRef = useRef({});
-  configRef.current = { makerCount, makerPages, calendarEventCount, calendarPages, makersDurationMs, calendarDurationMs, minSlotMs };
 
   const clearRotationTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -45,25 +43,6 @@ export default function useDisplayOrchestrator({
       timerRef.current = null;
     }
   }, []);
-
-  // ── Schedule the next view transition ─────────────────────────
-  const scheduleNext = useCallback((view) => {
-    clearRotationTimer();
-
-    const {
-      makerCount, makerPages, calendarEventCount, calendarPages,
-      makersDurationMs, calendarDurationMs, minSlotMs,
-    } = configRef.current;
-
-    const duration = view === VIEWS.MAKERS
-      ? computeSlot(makerCount, makerPages, minSlotMs, makersDurationMs)
-      : computeSlot(calendarEventCount, calendarPages, minSlotMs, calendarDurationMs);
-
-    timerRef.current = setTimeout(() => {
-      const nextView = view === VIEWS.MAKERS ? VIEWS.CALENDAR : VIEWS.MAKERS;
-      setCurrentView(nextView);
-    }, duration);
-  }, [clearRotationTimer]);
 
   // ── React to component visibility changes ─────────────────────
   useEffect(() => {
@@ -93,16 +72,36 @@ export default function useDisplayOrchestrator({
     setCurrentView((prev) => (prev === VIEWS.FALLBACK ? VIEWS.MAKERS : prev));
   }, [makersVisible, calendarVisible, hasFetched, clearRotationTimer]);
 
-  // ── Start / restart the rotation timer only while both are visible ──
+  // ── Start / restart the rotation timer whenever the active view's
+  //    resolved duration or page count changes — so a live admin edit
+  //    reschedules the in-flight timer immediately, not on the next flip ──
   useEffect(() => {
     if (!hasFetched || !makersVisible || !calendarVisible) {
       return;
     }
 
-    scheduleNext(currentView);
+    clearRotationTimer();
+
+    const duration = currentView === VIEWS.MAKERS
+      ? makersDurationMs * makerPages
+      : calendarDurationMs * calendarPages;
+
+    timerRef.current = setTimeout(() => {
+      setCurrentView((prev) => (prev === VIEWS.MAKERS ? VIEWS.CALENDAR : VIEWS.MAKERS));
+    }, duration);
 
     return () => clearRotationTimer();
-  }, [currentView, hasFetched, makersVisible, calendarVisible, scheduleNext, clearRotationTimer]);
+  }, [
+    currentView,
+    hasFetched,
+    makersVisible,
+    calendarVisible,
+    makersDurationMs,
+    calendarDurationMs,
+    makerPages,
+    calendarPages,
+    clearRotationTimer,
+  ]);
 
   return { currentView };
 }

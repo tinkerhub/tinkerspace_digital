@@ -1,18 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import CardItem from '../cards/UserCard';
 import useGridLayout from '../../hooks/useGridLayout';
-import { getMakerCardsPerPage } from '../../utils/layout/makerGrid';
+import { getMakerCardsPerPage, CARD_WIDTH, CARD_HEIGHT, CARD_GAP } from '../../utils/layout/makerGrid';
 
-// Original design size — sets the card's aspect ratio, estimates how many
-// rows fit vertically, and caps how big a card can render: width is relative
-// (1fr columns, shrinks to fit more per row) but never grows past this.
-const CARD_WIDTH = 211;
-const CARD_HEIGHT = 257;
-const GAP = 32;
 const DEFAULT_PAGE_INTERVAL = 20000;
 
-export default function PaginatedCardGrid({ data, isActive = true, makersPerRow, makersDurationMs }) {
-  const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP, makersPerRow);
+export default function PaginatedCardGrid({ data, isActive = true, makersDurationMs }) {
+  const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, CARD_GAP);
   const totalSlots = cols * rows;
   // Keep the bottom-right grid cell clear for the fixed mascot overlay.
   const cardsPerPage = getMakerCardsPerPage(cols, rows);
@@ -63,8 +57,8 @@ export default function PaginatedCardGrid({ data, isActive = true, makersPerRow,
           justifyContent: displayCols < cols ? 'start' : 'space-between',
           justifyItems: 'center',
           alignContent: 'start',
-          columnGap: `${GAP}px`,
-          rowGap: `${GAP}px`
+          columnGap: `${CARD_GAP}px`,
+          rowGap: `${CARD_GAP}px`
         }}
       >
         {pageCards.map((card, index) => {

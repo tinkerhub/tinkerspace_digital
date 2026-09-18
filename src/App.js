@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchData } from './utils/api/fetchData';
 import { removeDuplicates } from './utils/helpers/removeDuplicates';
-import { getMakerCardsPerPage } from './utils/layout/makerGrid';
+import { getMakerCardsPerPage, CARD_WIDTH, CARD_HEIGHT, CARD_GAP } from './utils/layout/makerGrid';
 import DISPLAY_CONFIG from './utils/constants/displayConfig';
 import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
 import useGridLayout from './hooks/useGridLayout';
@@ -15,11 +15,6 @@ import TinkerHubMascot from './components/mascot/TinkerHubMascot';
 import UnclaimedScreen from './components/kiosk/UnclaimedScreen';
 
 const { VIEWS } = DISPLAY_CONFIG;
-
-// Constants matching those in PaginatedCardGrid
-const CARD_WIDTH = 211;
-const CARD_HEIGHT = 257;
-const GAP = 32;
 
 function App() {
     const [data, setData] = useState([]);
@@ -39,14 +34,10 @@ function App() {
         makersDurationMs,
         calendarEnabled,
         makersEnabled,
-        makersPerRow,
-        minSlotMs,
     } = useScreenConfig();
 
-    // Calculate layout here to determine makerPages for the orchestrator —
-    // cols is now the resolved makersPerRow (density config), not purely
-    // viewport-derived.
-    const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP, makersPerRow);
+    // Calculate layout here to determine makerPages for the orchestrator.
+    const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, CARD_GAP);
     const cardsPerPage = getMakerCardsPerPage(cols, rows);
     const makerPages = Math.ceil(data.length / cardsPerPage) || 1;
 
@@ -66,7 +57,6 @@ function App() {
         makersEnabled,
         makersDurationMs,
         calendarDurationMs,
-        minSlotMs,
     });
     const showMakers = currentView === VIEWS.MAKERS;
     const showCalendar = currentView === VIEWS.CALENDAR;
@@ -228,7 +218,6 @@ function App() {
                             <PaginatedCardGrid
                                 data={data}
                                 isActive={showMakers}
-                                makersPerRow={makersPerRow}
                                 makersDurationMs={makersDurationMs}
                             />
                         </div>

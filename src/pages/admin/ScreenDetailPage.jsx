@@ -64,14 +64,12 @@ export default function ScreenDetailPage() {
 
   const [screen, setScreen] = useState(null);
   const [spaces, setSpaces] = useState([]);
-  const [settings, setSettings] = useState(null);
   const [name, setName] = useState('');
   const [spaceId, setSpaceId] = useState(null);
   const [calendarEnabled, setCalendarEnabled] = useState(true);
   const [makersEnabled, setMakersEnabled] = useState(true);
   const [calendarDurationSec, setCalendarDurationSec] = useState({ override: false, value: 0 });
   const [makersDurationSec, setMakersDurationSec] = useState({ override: false, value: 0 });
-  const [makersPerRow, setMakersPerRow] = useState({ override: false, value: 0 });
 
   const load = async () => {
     const [{ data: screenData, error: screenError }, { data: spacesData }, { data: settingsData }] = await Promise.all([
@@ -85,7 +83,6 @@ export default function ScreenDetailPage() {
     }
     setScreen(screenData);
     setSpaces(spacesData ?? []);
-    setSettings(settingsData);
     setName(screenData.name ?? '');
     setSpaceId(screenData.space_id);
     setCalendarEnabled(screenData.calendar_enabled ?? true);
@@ -102,7 +99,6 @@ export default function ScreenDetailPage() {
         Math.round((settingsData?.maker_duration_ms ?? 20000) / 1000)
       )
     );
-    setMakersPerRow(initOverride(screenData.makers_per_row, settingsData?.makers_per_row_min ?? 4));
   };
 
   useEffect(() => {
@@ -122,7 +118,6 @@ export default function ScreenDetailPage() {
         makers_enabled: makersEnabled ? null : false,
         calendar_duration_ms: calendarDurationSec.override ? calendarDurationSec.value * 1000 : null,
         makers_duration_ms: makersDurationSec.override ? makersDurationSec.value * 1000 : null,
-        makers_per_row: makersPerRow.override ? makersPerRow.value : null,
       })
       .eq('id', id);
     if (error) {
@@ -142,8 +137,6 @@ export default function ScreenDetailPage() {
     calendarDurationSec.value,
     makersDurationSec.override,
     makersDurationSec.value,
-    makersPerRow.override,
-    makersPerRow.value,
   ]);
 
   const handleDelete = async () => {
@@ -161,9 +154,6 @@ export default function ScreenDetailPage() {
       </div>
     );
   }
-
-  const perRowMin = settings?.makers_per_row_min ?? 1;
-  const perRowMax = settings?.makers_per_row_max ?? 12;
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -239,21 +229,6 @@ export default function ScreenDetailPage() {
             state={makersDurationSec}
             onChange={setMakersDurationSec}
             min={1}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Grid density</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NumberOverrideRow
-            label={`Makers per row (${perRowMin}–${perRowMax})`}
-            state={makersPerRow}
-            onChange={setMakersPerRow}
-            min={perRowMin}
-            max={perRowMax}
           />
         </CardContent>
       </Card>

@@ -31,10 +31,6 @@ const DEFAULT_STATE = {
   makersDurationMs: 20_000,
   calendarEnabled: true,
   makersEnabled: true,
-  makersPerRow: 4,
-  minSlotMs: 5000,
-  makersPerRowMin: 2,
-  makersPerRowMax: 6,
 };
 
 export default function useScreenConfig() {
@@ -76,13 +72,6 @@ export default function useScreenConfig() {
         ),
         calendarEnabled: resolveSetting(screenRow?.calendar_enabled, true),
         makersEnabled: resolveSetting(screenRow?.makers_enabled, true),
-        makersPerRow: resolveSetting(
-          screenRow?.makers_per_row,
-          settingsRow?.makers_per_row_min ?? prev.makersPerRow
-        ),
-        minSlotMs: settingsRow?.min_slot_ms ?? prev.minSlotMs,
-        makersPerRowMin: settingsRow?.makers_per_row_min ?? prev.makersPerRowMin,
-        makersPerRowMax: settingsRow?.makers_per_row_max ?? prev.makersPerRowMax,
       }));
     };
 

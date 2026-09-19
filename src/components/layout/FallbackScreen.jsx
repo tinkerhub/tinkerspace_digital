@@ -11,7 +11,7 @@ export default function FallbackScreen() {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+    <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 text-gray-900 dark:text-gray-100">
       <div className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">TinkerHub</div>
       <div className="text-7xl font-black tracking-tighter">
         {now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}

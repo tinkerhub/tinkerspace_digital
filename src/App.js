@@ -11,7 +11,7 @@ import Header from './components/layout/Header';
 import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
 import CalendarDashboard from './components/layout/CalendarDashboard';
 import FallbackScreen from './components/layout/FallbackScreen';
-import TinkerHubMascot from './components/mascot/TinkerHubMascot';
+// import TinkerHubMascot from './components/mascot/TinkerHubMascot'; // Mascot (Hidden for now) — replaced with a static sticker below
 import UnclaimedScreen from './components/kiosk/UnclaimedScreen';
 
 const { VIEWS } = DISPLAY_CONFIG;
@@ -291,10 +291,17 @@ function App() {
                     </button>
                     */}
 
+                    {/* Mascot (Hidden for now) — animated version, see src/components/mascot
                     <TinkerHubMascot
                         makerCount={data.length}
                         currentView={currentView}
                         isVisible={isAppReady}
+                    />
+                    */}
+                    <img
+                        src="/images/dont-look.png"
+                        alt="TinkerHub mascot sticker"
+                        className="w-52 h-52 object-contain"
                     />
                 </div>
 

@@ -301,7 +301,7 @@ function App() {
                     <img
                         src="/images/dont-look.png"
                         alt="TinkerHub mascot sticker"
-                        className="w-52 h-52 object-contain"
+                        className="w-16 h-16 object-contain"
                     />
                 </div>
 

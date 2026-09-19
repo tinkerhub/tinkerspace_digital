@@ -43,6 +43,28 @@ const MOCK_MAKERS = [
   },
 ];
 
+// Padding names to stress-test grid layout/pagination with a larger roster.
+const EXTRA_MAKER_NAMES = [
+  'Neville Longbottom', 'Draco Malfoy', 'Albus Dumbledore', 'Severus Snape',
+  'Minerva McGonagall', 'Sirius Black', 'Remus Lupin', 'Fred Weasley',
+  'George Weasley', 'Percy Weasley', 'Bill Weasley', 'Charlie Weasley',
+  'Molly Weasley', 'Arthur Weasley', 'Cho Chang', 'Cedric Diggory',
+  'Fleur Delacour', 'Viktor Krum', 'Nymphadora Tonks', 'Kingsley Shacklebolt',
+  'Dobby', 'Bellatrix Lestrange', 'Lucius Malfoy', 'Narcissa Malfoy',
+  'Xenophilius Lovegood', 'Alastor Moody', 'Horace Slughorn', 'Dolores Umbridge',
+  'Rita Skeeter', 'Argus Filch', 'Peeves', 'Moaning Myrtle',
+  'Oliver Wood', 'Lee Jordan',
+];
+const MAKER_PURPOSES = ['Working on a project', 'Self Learning', 'On duty', 'Attending an event', 'Visiting'];
+
+MOCK_MAKERS.push(...EXTRA_MAKER_NAMES.map((name, i) => ({
+  membershipId: `mk-${String(i + 7).padStart(3, '0')}`,
+  name,
+  purpose: MAKER_PURPOSES[i % MAKER_PURPOSES.length],
+  workingOn: `${name.split(' ')[0]}'s current build`,
+  avatar: '',
+})));
+
 function toIso(date) {
   return date.toISOString();
 }

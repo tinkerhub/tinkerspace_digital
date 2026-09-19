@@ -8,7 +8,6 @@ const DEFAULT_PAGE_INTERVAL = 20000;
 export default function PaginatedCardGrid({ data, isActive = true, makersDurationMs }) {
   const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, CARD_GAP);
   const totalSlots = cols * rows;
-  // Keep the bottom-right grid cell clear for the fixed mascot overlay.
   const cardsPerPage = getMakerCardsPerPage(cols, rows);
   const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
   const pageInterval = makersDurationMs || DEFAULT_PAGE_INTERVAL;
@@ -40,11 +39,7 @@ export default function PaginatedCardGrid({ data, isActive = true, makersDuratio
   const end = start + cardsPerPage;
   const pageCards = data.slice(start, end);
 
-  // Fewer cards than one row's width → don't stretch to fill it, show them
-  // at natural width instead (only column count shrinks; a partial *last*
-  // row on a fuller page still pads out to `cols` as before).
-  const displayCols = pageCards.length > 0 && pageCards.length < cols ? pageCards.length : cols;
-  const emptySlots = displayCols === cols ? totalSlots - pageCards.length : 0;
+  const emptySlots = totalSlots - pageCards.length;
   const cardAspectRatio = `${CARD_WIDTH} / ${CARD_HEIGHT}`;
 
   return (
@@ -53,8 +48,8 @@ export default function PaginatedCardGrid({ data, isActive = true, makersDuratio
         className="flex-1 w-full flex justify-between content-start py-[clamp(1rem,2vh,1.5rem)] mt-[clamp(1rem,2vh,1.5rem)] px-12"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${displayCols}, 1fr)`,
-          justifyContent: displayCols < cols ? 'start' : 'space-between',
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          justifyContent: 'space-between',
           justifyItems: 'center',
           alignContent: 'start',
           columnGap: `${CARD_GAP}px`,

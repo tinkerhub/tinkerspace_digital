@@ -8,7 +8,7 @@ export default function CardImage({ src, alt, purpose, purposeColor }) {
     <div className="w-full aspect-square overflow-hidden relative border-b border-gray-100 bg-gray-50 rounded-t-lg">
       {(!src || imageError) ? (
         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-          <span className="text-[clamp(1.5rem,5vw,3.75rem)] font-bold">{firstLetter}</span>
+          <span className="text-[clamp(0.85rem,3vw,2.1rem)] font-bold">{firstLetter}</span>
         </div>
       ) : (
         <img
@@ -19,9 +19,9 @@ export default function CardImage({ src, alt, purpose, purposeColor }) {
         />
       )}
       {purpose && (
-        <div className="absolute bottom-2 left-2 z-10">
-          <span 
-            className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-md"
+        <div className="absolute bottom-1 left-1 z-10">
+          <span
+            className="inline-block px-1.5 py-0.5 rounded-full text-[6px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-md"
             style={{ backgroundColor: `${purposeColor}dd`, color: '#222' }}
           >
             {purpose}

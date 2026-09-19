@@ -21,15 +21,15 @@ export default function UserBadges({ name }) {
   return (
     <div style={{
       position: 'absolute',
-      top: '170px',
-      right: '4px',
-      width: '56px',
-      height: '56px',
+      top: '97px',
+      right: '2px',
+      width: '32px',
+      height: '32px',
       transform: 'translateY(-50%)',
       zIndex: 2,
       display: 'flex',
       flexDirection: 'column',
-      gap: '4px'
+      gap: '2px'
     }}>
       {userBadges
         .sort((a, b) => BADGE_METADATA[a].priority - BADGE_METADATA[b].priority)

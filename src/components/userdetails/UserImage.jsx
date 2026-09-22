@@ -14,6 +14,7 @@ export default function CardImage({ src, alt, purpose, purposeColor }) {
         <img
           src={src}
           alt={alt}
+          decoding="async"
           onError={() => setImageError(true)}
           className="w-full h-full object-cover transition-all"
         />

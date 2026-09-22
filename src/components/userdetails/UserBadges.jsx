@@ -5,8 +5,9 @@ import { USER_BADGES, BADGE_METADATA } from '../../utils/constants/badgeConfig';
 function AchievementBadge({ type, alt }) {
   return (
     <img 
-      src={`${process.env.PUBLIC_URL}/images/${type}.png`}
+      src={`${process.env.PUBLIC_URL}/images/${type}.webp`}
       alt={alt}
+      decoding="async"
       style={{
         width: '100%',
         height: '100%',

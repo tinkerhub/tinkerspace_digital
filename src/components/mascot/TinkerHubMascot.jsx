@@ -24,7 +24,7 @@ const WATCHDOG_SCHEDULER_GRACE_MS = 12000;
 const WATCHDOG_ANIMATION_GRACE_MS = 15000;
 const MASCOT_ASSET_VERSION = process.env.REACT_APP_MASCOT_ASSET_VERSION || 'mascot-watchdog-v1';
 const PUBLIC_ASSET_BASE = process.env.PUBLIC_URL === '.' ? '' : process.env.PUBLIC_URL;
-const FALLBACK_STICKER_IMAGE = '/images/dont-look.png';
+const FALLBACK_STICKER_IMAGE = '/images/dont-look.webp';
 
 function randomDuration(min, max) {
   return min + Math.round(Math.random() * (max - min));

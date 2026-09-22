@@ -215,8 +215,9 @@ function App() {
                             "Community is my spinach"
                         </p>
                         <img 
-                            src={`${process.env.PUBLIC_URL}/images/spinach.png`} 
+                            src={`${process.env.PUBLIC_URL}/images/spinach.webp`} 
                             alt="Spinach" 
+                            decoding="async"
                             className="w-10 h-10 object-contain drop-shadow-md"
                         />
                     </div>

@@ -14,7 +14,7 @@ const PURPOSE_COLORS = {
   'default': '#FFF3B0' // Soft Yellow
 };
 
-const UserCard = ({ card }) => {
+const UserCard = ({ card, scale = 1 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
   const textRef = useRef(null);
   const containerRef = useRef(null);
@@ -34,7 +34,7 @@ const UserCard = ({ card }) => {
 
   return (
     <div 
-      className="bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-lg border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden flex flex-col items-center transition-all duration-300"
+      className="relative bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-lg border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden flex flex-col items-center transition-all duration-300"
       style={{ width: '100%', height: '100%' }}
     >
       <UserImage
@@ -42,13 +42,15 @@ const UserCard = ({ card }) => {
         alt={card.name}
         purpose={displayPurpose}
         purposeColor={purposeColor}
+        scale={scale}
       />
-      <UserBadges name={card.name} />
+      <UserBadges name={card.name} scale={scale} />
       <UserInfo
         card={card}
         textRef={textRef}
         containerRef={containerRef}
         isOverflowing={isOverflowing}
+        scale={scale}
       />
     </div>
   );

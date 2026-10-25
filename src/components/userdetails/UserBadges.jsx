@@ -16,20 +16,21 @@ function AchievementBadge({ type, alt }) {
   );
 }
 
-export default function UserBadges({ name }) {
+export default function UserBadges({ name, scale = 1 }) {
   const userBadges = USER_BADGES[name] || [];
+  const size = Math.max(16, 56 * scale);
   return (
     <div style={{
       position: 'absolute',
-      top: '97px',
-      right: '2px',
-      width: '32px',
-      height: '32px',
+      top: `${170 * scale}px`,
+      right: `${Math.max(1, 4 * scale)}px`,
+      width: `${size}px`,
+      height: `${size}px`,
       transform: 'translateY(-50%)',
       zIndex: 2,
       display: 'flex',
       flexDirection: 'column',
-      gap: '2px'
+      gap: `${Math.max(1, 4 * scale)}px`
     }}>
       {userBadges
         .sort((a, b) => BADGE_METADATA[a].priority - BADGE_METADATA[b].priority)

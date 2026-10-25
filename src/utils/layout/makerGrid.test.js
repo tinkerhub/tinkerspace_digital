@@ -1,8 +1,8 @@
 import { getMakerCardsPerPage } from './makerGrid';
 
 describe('getMakerCardsPerPage', () => {
-  it('reserves the bottom-right slot while retaining a one-slot layout', () => {
-    expect(getMakerCardsPerPage(3, 2)).toBe(5);
+  it('returns the full grid capacity', () => {
+    expect(getMakerCardsPerPage(3, 2)).toBe(6);
     expect(getMakerCardsPerPage(1, 1)).toBe(1);
   });
 });

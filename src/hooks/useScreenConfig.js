@@ -4,10 +4,6 @@ import { resolveSetting } from '../utils/resolveSetting';
 
 const SCREEN_ID_KEY = 'tinkerspace_screen_id';
 
-function isLikelyKiosk() {
-  return window.innerWidth >= 1024 && !/Mobi/i.test(navigator.userAgent);
-}
-
 function getOrCreateScreenId() {
   let id = localStorage.getItem(SCREEN_ID_KEY);
   if (!id) {
@@ -40,9 +36,6 @@ export default function useScreenConfig() {
     if (!supabase) {
       setState((prev) => ({ ...prev, status: 'unconfigured' }));
       return;
-    }
-    if (!isLikelyKiosk()) {
-      return; // stays 'pending' — renders normally, never registers
     }
 
     const screenId = getOrCreateScreenId();

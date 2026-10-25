@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import CardItem from '../cards/UserCard';
 import useGridLayout from '../../hooks/useGridLayout';
-import { getMakerCardsPerPage, CARD_WIDTH, CARD_HEIGHT, CARD_GAP } from '../../utils/layout/makerGrid';
+import { getMakerCardsPerPage } from '../../utils/layout/makerGrid';
 
 const DEFAULT_PAGE_INTERVAL = 20000;
 
 export default function PaginatedCardGrid({ data, isActive = true, makersDurationMs }) {
-  const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, CARD_GAP);
+  const { cols, rows, width: cardWidth, height: cardHeight, gap, padding, scale } = useGridLayout(data.length);
   const totalSlots = cols * rows;
   const cardsPerPage = getMakerCardsPerPage(cols, rows);
   const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
@@ -40,20 +40,22 @@ export default function PaginatedCardGrid({ data, isActive = true, makersDuratio
   const pageCards = data.slice(start, end);
 
   const emptySlots = totalSlots - pageCards.length;
-  const cardAspectRatio = `${CARD_WIDTH} / ${CARD_HEIGHT}`;
+  const cardAspectRatio = `${cardWidth} / ${cardHeight}`;
 
   return (
     <div className="flex flex-col w-full h-full relative font-mono">
       <div
-        className="flex-1 w-full flex justify-between content-start py-[clamp(1rem,2vh,1.5rem)] mt-[clamp(1rem,2vh,1.5rem)] px-12"
+        className="flex-1 w-full flex justify-between content-start pb-[clamp(1rem,2vh,1.5rem)]"
         style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${cols}, 1fr)`,
           justifyContent: 'space-between',
           justifyItems: 'center',
           alignContent: 'start',
-          columnGap: `${CARD_GAP}px`,
-          rowGap: `${CARD_GAP}px`
+          columnGap: `${gap}px`,
+          rowGap: `${gap}px`,
+          paddingLeft: `${padding}px`,
+          paddingRight: `${padding}px`,
         }}
       >
         {pageCards.map((card, index) => {
@@ -61,9 +63,9 @@ export default function PaginatedCardGrid({ data, isActive = true, makersDuratio
             <div
               key={card.id || card.name || index}
               className="transition-opacity duration-500 w-full"
-              style={{ aspectRatio: cardAspectRatio, maxWidth: `${CARD_WIDTH}px` }}
+              style={{ aspectRatio: cardAspectRatio, maxWidth: `${cardWidth}px` }}
             >
-              <CardItem card={card} />
+              <CardItem card={card} scale={scale} />
             </div>
           );
         })}
@@ -72,7 +74,7 @@ export default function PaginatedCardGrid({ data, isActive = true, makersDuratio
             <div
               key={`empty-${i}`}
               className="w-full"
-              style={{ background: 'transparent', aspectRatio: cardAspectRatio, maxWidth: `${CARD_WIDTH}px` }}
+              style={{ background: 'transparent', aspectRatio: cardAspectRatio, maxWidth: `${cardWidth}px` }}
             />
           );
         })}

@@ -1,11 +1,11 @@
-export const fetchData = async () => {
+export const fetchData = async (spaceId) => {
     const API_URL = process.env.REACT_APP_API_BASE_URL;
 
     try {
         if (!API_URL) {
             throw new Error('REACT_APP_API_BASE_URL is not set. Please configure it in your .env file.');
         }
-        const response = await fetch(`${API_URL}/checkin/active`, {
+        const response = await fetch(`${API_URL}/checkin/active?space_id=${encodeURIComponent(spaceId)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

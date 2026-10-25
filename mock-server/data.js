@@ -5,6 +5,7 @@ const MOCK_MAKERS = [
     purpose: 'Working on a project',
     workingOn: 'Marauder Map refresh',
     avatar: '',
+    spaceId: 1,
   },
   {
     membershipId: 'mk-002',
@@ -12,6 +13,7 @@ const MOCK_MAKERS = [
     purpose: 'Self Learning',
     workingOn: 'Advanced arithmancy notes',
     avatar: '',
+    spaceId: 1,
   },
   {
     membershipId: 'mk-003',
@@ -19,6 +21,7 @@ const MOCK_MAKERS = [
     purpose: 'On duty',
     workingOn: 'Care of magical creatures desk',
     avatar: '',
+    spaceId: 1,
   },
   {
     membershipId: 'mk-004',
@@ -26,6 +29,7 @@ const MOCK_MAKERS = [
     purpose: 'Attending an event',
     workingOn: 'Spectrespecs prototyping night',
     avatar: '',
+    spaceId: 2,
   },
   {
     membershipId: 'mk-005',
@@ -33,6 +37,7 @@ const MOCK_MAKERS = [
     purpose: 'Working on a project',
     projectName: 'Wizard chess scoreboard',
     avatar: '',
+    spaceId: 2,
   },
   {
     membershipId: 'mk-006',
@@ -40,6 +45,7 @@ const MOCK_MAKERS = [
     purpose: 'Visiting',
     workingOn: 'Daily Prophet open house',
     avatar: '',
+    spaceId: 2,
   },
 ];
 
@@ -63,6 +69,7 @@ MOCK_MAKERS.push(...EXTRA_MAKER_NAMES.map((name, i) => ({
   purpose: MAKER_PURPOSES[i % MAKER_PURPOSES.length],
   workingOn: `${name.split(' ')[0]}'s current build`,
   avatar: '',
+  spaceId: (i % 2) + 1,
 })));
 
 function toIso(date) {
@@ -87,8 +94,9 @@ function startOfMonth(date) {
   return new Date(date.getFullYear(), date.getMonth(), 1, 9, 0, 0, 0);
 }
 
-function getMockMakers() {
-  return MOCK_MAKERS;
+function getMockMakers(spaceId) {
+  if (spaceId === undefined || spaceId === null || spaceId === 'undefined') return MOCK_MAKERS;
+  return MOCK_MAKERS.filter((maker) => String(maker.spaceId) === String(spaceId));
 }
 
 /**

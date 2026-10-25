@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchData } from './utils/api/fetchData';
 import { removeDuplicates } from './utils/helpers/removeDuplicates';
-import { getMakerCardsPerPage, CARD_WIDTH, CARD_HEIGHT, CARD_GAP } from './utils/layout/makerGrid';
+import { getMakerCardsPerPage } from './utils/layout/makerGrid';
 import DISPLAY_CONFIG from './utils/constants/displayConfig';
 import useDisplayOrchestrator from './hooks/useDisplayOrchestrator';
 import useGridLayout from './hooks/useGridLayout';
@@ -37,7 +37,7 @@ function App() {
     } = useScreenConfig();
 
     // Calculate layout here to determine makerPages for the orchestrator.
-    const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, CARD_GAP);
+    const { cols, rows } = useGridLayout(data.length);
     const cardsPerPage = getMakerCardsPerPage(cols, rows);
     const makerPages = Math.ceil(data.length / cardsPerPage) || 1;
 
@@ -73,10 +73,16 @@ function App() {
             }
         };
         wakeLock();
+    }, []);
+
+    useEffect(() => {
+        // Don't fetch (or display) maker data until this screen is claimed —
+        // any link opened on any device is otherwise a free peek at the roster.
+        if (screenStatus !== 'claimed') return;
 
         const fetchRecords = async () => {
             try {
-                const records = await fetchData(); 
+                const records = await fetchData(spaceId);
                 setData(removeDuplicates(records));
             } catch (error) {
                 console.error('Fetch failed:', error);
@@ -88,7 +94,7 @@ function App() {
         fetchRecords();
         const interval = setInterval(fetchRecords, 20000);
         return () => clearInterval(interval);
-    }, []);
+    }, [screenStatus, spaceId]);
 
     // Theme Detection Logic
     useEffect(() => {
@@ -168,7 +174,7 @@ function App() {
         return () => cancelAnimationFrame(animationFrameId);
     }, []);
 
-    if (screenStatus === 'unclaimed' || screenStatus === 'unconfigured') {
+    if (screenStatus !== 'claimed') {
         return <UnclaimedScreen code={screenCode} />;
     }
 
@@ -299,9 +305,9 @@ function App() {
                     />
                     */}
                     <img
-                        src="/images/dont-look.png"
+                        src="/images/dont-look-trimmed.png"
                         alt="TinkerHub mascot sticker"
-                        className="w-16 h-16 object-contain"
+                        className="w-28 h-28 object-contain"
                     />
                 </div>
 

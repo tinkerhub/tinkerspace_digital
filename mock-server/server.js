@@ -54,7 +54,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === 'GET' && url.pathname === '/checkin/active') {
-    writeJson(res, 200, getMockMakers());
+    writeJson(res, 200, getMockMakers(url.searchParams.get('space_id')));
     return;
   }
 

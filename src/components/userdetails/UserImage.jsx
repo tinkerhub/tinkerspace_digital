@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function CardImage({ src, alt, purpose, purposeColor }) {
+export default function CardImage({ src, alt, purpose, purposeColor, scale = 1 }) {
   const [imageError, setImageError] = useState(false);
   const firstLetter = alt ? alt.charAt(0).toUpperCase() : '?';
 
@@ -8,7 +8,7 @@ export default function CardImage({ src, alt, purpose, purposeColor }) {
     <div className="w-full aspect-square overflow-hidden relative border-b border-gray-100 bg-gray-50 rounded-t-lg">
       {(!src || imageError) ? (
         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-          <span className="text-[clamp(0.85rem,3vw,2.1rem)] font-bold">{firstLetter}</span>
+          <span className="font-bold" style={{ fontSize: `${Math.max(12, 60 * scale)}px` }}>{firstLetter}</span>
         </div>
       ) : (
         <img
@@ -19,10 +19,15 @@ export default function CardImage({ src, alt, purpose, purposeColor }) {
         />
       )}
       {purpose && (
-        <div className="absolute bottom-1 left-1 z-10">
+        <div style={{ position: 'absolute', bottom: `${Math.max(2, 8 * scale)}px`, left: `${Math.max(2, 8 * scale)}px`, zIndex: 10 }}>
           <span
-            className="inline-block px-1.5 py-0.5 rounded-full text-[6px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-md"
-            style={{ backgroundColor: `${purposeColor}dd`, color: '#222' }}
+            className="inline-block rounded-full font-bold uppercase tracking-wider shadow-sm backdrop-blur-md"
+            style={{
+              backgroundColor: `${purposeColor}dd`,
+              color: '#222',
+              padding: `${Math.max(2, 4 * scale)}px ${Math.max(4, 12 * scale)}px`,
+              fontSize: `${Math.max(5, 10 * scale)}px`,
+            }}
           >
             {purpose}
           </span>

@@ -11,6 +11,7 @@ import PaginatedCardGrid from './components/layout/PaginatedCardGrid';
 import CalendarDashboard from './components/layout/CalendarDashboard';
 import TinkerHubMascot from './components/mascot/TinkerHubMascot';
 import UnclaimedScreen from './components/kiosk/UnclaimedScreen';
+import { initKioskWatchdog } from './utils/kiosk/kioskWatchdog';
 
 const { VIEWS } = DISPLAY_CONFIG;
 
@@ -41,33 +42,77 @@ function App() {
     const showMakers = currentView === VIEWS.MAKERS;
     const showCalendar = currentView === VIEWS.CALENDAR;
 
+    // ── Screen Wake Lock (with visibilitychange auto-recovery) ───
     useEffect(() => {
-        // Keep screen awake
-        const wakeLock = async () => {
-            try {
-                await document.documentElement.requestFullscreen();
-                await navigator.wakeLock.request('screen');
-            } catch (err) {
-                console.log('Wake Lock error:', err);
+        let wakeLockSentinel = null;
+        const requestWakeLock = async () => {
+            if (typeof navigator !== 'undefined' && 'wakeLock' in navigator && document.visibilityState === 'visible') {
+                try {
+                    wakeLockSentinel = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    // Ignored on platforms without support or user gesture restriction
+                }
             }
         };
-        wakeLock();
+
+        requestWakeLock();
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (wakeLockSentinel) {
+                wakeLockSentinel.release().catch(() => {});
+            }
+        };
+    }, []);
+
+    // ── Kiosk Watchdog (24/7 Signage Guardian) ──────────────────
+    useEffect(() => {
+        return initKioskWatchdog();
+    }, []);
+
+    // ── Maker Ingestion Loop with Race-Condition Guard ──────────
+    useEffect(() => {
+        let isCurrent = true;
 
         const fetchRecords = async () => {
             try {
-                const records = await fetchData(); 
-                setData(removeDuplicates(records));
+                const records = await fetchData(spaceId); 
+                if (isCurrent) {
+                    setData(removeDuplicates(records));
+                }
             } catch (error) {
                 console.error('Fetch failed:', error);
             } finally {
-                setHasFetched(true);
+                if (isCurrent) {
+                    setHasFetched(true);
+                }
             }
         };
 
         fetchRecords();
         const interval = setInterval(fetchRecords, 20000);
-        return () => clearInterval(interval);
-    }, []);
+
+        const handleOnline = () => {
+            fetchRecords();
+        };
+
+        window.addEventListener('kiosk:online', handleOnline);
+        window.addEventListener('online', handleOnline);
+
+        return () => {
+            isCurrent = false;
+            clearInterval(interval);
+            window.removeEventListener('kiosk:online', handleOnline);
+            window.removeEventListener('online', handleOnline);
+        };
+    }, [spaceId]);
 
     // Theme Detection Logic
     useEffect(() => {
@@ -103,6 +148,7 @@ function App() {
         let currentProgress = 0;
         let animationFrameId;
         let isPaused = false;
+        const timeouts = [];
 
         const updateProgress = () => {
             if (isPaused) return;
@@ -115,10 +161,11 @@ function App() {
                     setLoadingProgress(Math.floor(currentProgress));
                     
                     // Pause for exactly 1 second at 63%
-                    setTimeout(() => {
+                    const t1 = setTimeout(() => {
                         isPaused = false;
                         animationFrameId = requestAnimationFrame(updateProgress);
                     }, 1000);
+                    timeouts.push(t1);
                     return; 
                 }
             } else if (currentProgress < 100) {
@@ -128,13 +175,15 @@ function App() {
                     setLoadingProgress(100);
                     
                     // Loading complete - start animations
-                    setTimeout(() => {
+                    const t2 = setTimeout(() => {
                         setStartAnimation(true);
                         // Show main app shortly after vector starts moving
-                        setTimeout(() => {
+                        const t3 = setTimeout(() => {
                             setIsAppReady(true);
-                        }, 500); 
-                    }, 400); 
+                        }, 500);
+                        timeouts.push(t3);
+                    }, 400);
+                    timeouts.push(t2);
                     return;
                 }
             }
@@ -144,10 +193,14 @@ function App() {
         };
 
         animationFrameId = requestAnimationFrame(updateProgress);
-        return () => cancelAnimationFrame(animationFrameId);
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            timeouts.forEach(clearTimeout);
+        };
     }, []);
 
-    if (screenStatus === 'unclaimed' || screenStatus === 'unconfigured') {
+    // Only block if Supabase is connected and this device is awaiting setup
+    if (screenStatus === 'unclaimed') {
         return <UnclaimedScreen code={screenCode} />;
     }
 
@@ -194,7 +247,7 @@ function App() {
                                 showMakers ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                             }`}
                         >
-                            <PaginatedCardGrid data={data} isActive={showMakers} />
+                            <PaginatedCardGrid data={data} isActive={showMakers} makerDurationMs={makerDurationMs} />
                         </div>
 
                         {/* ── Display Orchestration: Calendar View ───────── */}
@@ -258,11 +311,6 @@ function App() {
                         isVisible={isAppReady}
                     />
                 </div>
-
-                {/* Absolute Full-Width Bottom Marquee (Hidden for now) */}
-                {/* <div className="absolute bottom-0 left-0 w-full pointer-events-none z-50">
-                    <LedMarquee />
-                </div> */}
             </div>
         </div>
     );

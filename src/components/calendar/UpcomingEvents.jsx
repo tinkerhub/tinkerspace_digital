@@ -58,7 +58,7 @@ const UpcomingEvents = ({ events = [], className = '' }) => {
   if (events.length === 0) {
     return (
       <div
-        className={`bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden transition-all duration-500 ${className}`}
+        className={`bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden transition-all duration-500 ${className}`}
       >
         <EmptyState type="upcoming" />
       </div>
@@ -67,7 +67,7 @@ const UpcomingEvents = ({ events = [], className = '' }) => {
 
   return (
     <div
-      className={`bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden transition-all duration-500 relative flex flex-col ${className}`}
+      className={`bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden transition-all duration-500 relative flex flex-col ${className}`}
     >
       <style>{`
         @keyframes marquee {

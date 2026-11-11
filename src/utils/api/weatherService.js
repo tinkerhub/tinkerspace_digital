@@ -1,46 +1,29 @@
 // Tinkerspace coordinates
 const DEFAULT_LAT = 10.0469797;
 const DEFAULT_LONG = 76.3351998;
+const REQUEST_TIMEOUT_MS = 10000;
 
 export async function getCurrentWeather() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
     const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${DEFAULT_LAT}&longitude=${DEFAULT_LONG}&current=temperature_2m,precipitation,weather_code&timezone=auto`
+      `https://api.open-meteo.com/v1/forecast?latitude=${DEFAULT_LAT}&longitude=${DEFAULT_LONG}&current=temperature_2m,precipitation,weather_code&timezone=auto`,
+      { signal: controller.signal }
     );
     
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new Error('Weather data fetch failed');
+      throw new Error(`Weather data fetch failed: ${response.status}`);
     }
 
     const data = await response.json();
+    if (!data || !data.current || typeof data.current.weather_code === 'undefined') {
+      throw new Error('Weather API returned unexpected structure.');
+    }
 
-    //Uncomment the below code to test the rain animation
-
-    // const response = {
-    //   "latitude": 10,
-    //   "longitude": 76.375,
-    //   "generationtime_ms": 0.0363588333129883,
-    //   "utc_offset_seconds": 19800,
-    //   "timezone": "Asia/Kolkata",
-    //   "timezone_abbreviation": "GMT+5:30",
-    //   "elevation": 9,
-    //   "current_units": {
-    //     "time": "iso8601",
-    //     "interval": "seconds",
-    //     "temperature_2m": "°C",
-    //     "precipitation": "mm",
-    //     "weather_code": "wmo code"
-    //   },
-    //   "current": {
-    //     "time": "2025-04-29T21:45",
-    //     "interval": 900,
-    //     "temperature_2m": 16.2,
-    //     "precipitation": 120,
-    //     "weather_code": 65
-    //   }
-    // }
-    // const data = response;
-    
     // WMO Weather interpretation codes
     // https://open-meteo.com/en/docs
     const weatherCode = data.current.weather_code;
@@ -65,11 +48,12 @@ export async function getCurrentWeather() {
     return {
       isRaining,
       description: getWeatherDescription(weatherCode),
-      temperature: Math.round(data.current.temperature_2m),
-      precipitation: data.current.precipitation
+      temperature: Math.round(data.current.temperature_2m ?? 0),
+      precipitation: data.current.precipitation ?? 0,
     };
   } catch (error) {
-    console.error('Error fetching weather:', error);
+    clearTimeout(timeoutId);
+    console.error('Error fetching weather:', error.message);
     return null;
   }
-} 
+}

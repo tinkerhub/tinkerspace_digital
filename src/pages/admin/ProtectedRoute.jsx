@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Redirect } from 'wouter-preact';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function ProtectedRoute({ children }) {
@@ -18,7 +18,7 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!session) {
-    return <Navigate to="/admin/login" replace />;
+    return <Redirect to="/admin/login" replace />;
   }
 
   return children;

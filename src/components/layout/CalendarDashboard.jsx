@@ -58,27 +58,38 @@ const CalendarDashboard = ({ spaceId }) => {
 
   // ── Mount + spaceId changes: refetch immediately, then poll ─────
   useEffect(() => {
+    hasLoadedRef.current = false;
     refresh();
 
     intervalRef.current = setInterval(refresh, POLL_INTERVAL_MS);
+
+    const handleOnline = () => {
+      refresh();
+    };
+
+    window.addEventListener('kiosk:online', handleOnline);
+    window.addEventListener('online', handleOnline);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      window.removeEventListener('kiosk:online', handleOnline);
+      window.removeEventListener('online', handleOnline);
     };
   }, [refresh]);
 
   // ── Derived values (memoised) ──────────────────────────────────
-  var generatedAt = data && data.generated_at;
+  const [currentDate, setCurrentDate] = useState(() => new Date());
 
-  var currentDate = useMemo(function () {
-    if (generatedAt) {
-      return new Date(generatedAt);
-    }
-    return new Date();
-  }, [generatedAt]);
+  useEffect(() => {
+    // Keep currentDate updated across midnight (checked once per minute)
+    const interval = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const calendarEvents = useMemo(() => data?.calendar ?? [], [data?.calendar]);
   const liveEvent = useMemo(() => data?.live_event ?? null, [data?.live_event]);

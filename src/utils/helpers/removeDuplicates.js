@@ -1,10 +1,15 @@
 export function removeDuplicates(datas) {
-    return (datas || []).reduce((acc, current) => {
-      const existingItem = acc.find(item => item.membershipId === current.membershipId);
-      if (!existingItem) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
-  }
+  if (!Array.isArray(datas)) return [];
+  return datas.reduce((acc, current) => {
+    if (!current) return acc;
+    const key = current.membershipId ?? current.id ?? current.name;
+    const existingItem = key
+      ? acc.find(item => (item.membershipId ?? item.id ?? item.name) === key)
+      : null;
+    if (!existingItem) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+}
   

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut } from '../../components/ui/icons';
 import { supabase } from '../../lib/supabaseClient';
 import { cn } from '../../lib/utils';
 

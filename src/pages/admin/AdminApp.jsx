@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Switch, Route } from 'wouter-preact';
 import { supabase } from '../../lib/supabaseClient';
 import Login from './Login';
 import ProtectedRoute from './ProtectedRoute';
@@ -17,18 +17,22 @@ export default function AdminApp() {
   }
 
   return (
-    <Routes>
-      <Route path="login" element={<Login />} />
-      <Route
-        path="*"
-        element={
-          <ProtectedRoute>
-            <AdminLayout>
-              <ConfigurePage />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <Switch>
+      <Route path="/admin/login" component={Login} />
+      <Route path="/admin/:rest*">
+        <ProtectedRoute>
+          <AdminLayout>
+            <ConfigurePage />
+          </AdminLayout>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin">
+        <ProtectedRoute>
+          <AdminLayout>
+            <ConfigurePage />
+          </AdminLayout>
+        </ProtectedRoute>
+      </Route>
+    </Switch>
   );
 }

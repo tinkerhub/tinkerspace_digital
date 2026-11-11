@@ -19,22 +19,24 @@ const UserCard = ({ card, CARD_HEIGHT }) => {
   const textRef = useRef(null);
   const containerRef = useRef(null);
 
-  const userBadges = USER_BADGES[card.name] || [];
-  const hasSecurityBadge = userBadges.includes('guard');
-  const displayPurpose = hasSecurityBadge ? 'On duty' : card.purpose;
-  const purposeColor = PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS['default'];
-
   useEffect(() => {
     if (textRef.current && containerRef.current) {
       const textWidth = textRef.current.scrollWidth;
       const containerWidth = containerRef.current.clientWidth;
       setIsOverflowing(textWidth - containerWidth > 1);
     }
-  }, [card.name]);
+  }, [card?.name]);
+
+  if (!card) return null;
+
+  const userBadges = (card.name && USER_BADGES[card.name]) || [];
+  const hasSecurityBadge = userBadges.includes('guard');
+  const displayPurpose = hasSecurityBadge ? 'On duty' : (card.purpose || 'default');
+  const purposeColor = PURPOSE_COLORS[displayPurpose] || PURPOSE_COLORS['default'];
 
   return (
     <div 
-      className="bg-white/40 dark:bg-white/5 backdrop-blur-2xl rounded-lg border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden flex flex-col items-center transition-all duration-300"
+      className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-lg border border-white/60 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden flex flex-col items-center transition-all duration-300"
       style={{
         width: '100%',
         height: `${CARD_HEIGHT}px`

@@ -8,12 +8,13 @@ const CARD_HEIGHT = 257;
 const GAP = 32;
 const PAGE_INTERVAL = 20000;
 
-export default function PaginatedCardGrid({ data, isActive = true }) {
+export default function PaginatedCardGrid({ data, isActive = true, makerDurationMs }) {
   const { cols, rows } = useGridLayout(CARD_WIDTH, CARD_HEIGHT, GAP);
   const totalSlots = cols * rows;
   // Keep the bottom-right grid cell clear for the fixed mascot overlay.
   const cardsPerPage = getMakerCardsPerPage(cols, rows);
   const totalPages = Math.ceil(data.length / cardsPerPage) || 1;
+  const pageInterval = makerDurationMs || PAGE_INTERVAL;
   const [page, setPage] = useState(0);
   const intervalRef = useRef();
 
@@ -33,12 +34,13 @@ export default function PaginatedCardGrid({ data, isActive = true }) {
         if (p + 1 >= totalPages) return p;
         return p + 1;
       });
-    }, PAGE_INTERVAL);
+    }, pageInterval);
     
     return () => clearInterval(intervalRef.current);
-  }, [totalPages, isActive]);
+  }, [totalPages, isActive, pageInterval]);
 
-  const start = page * cardsPerPage;
+  const safePage = Math.min(page, Math.max(0, totalPages - 1));
+  const start = safePage * cardsPerPage;
   const end = start + cardsPerPage;
   const pageCards = data.slice(start, end);
   const emptySlots = totalSlots - pageCards.length;

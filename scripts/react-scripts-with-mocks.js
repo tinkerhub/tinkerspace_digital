@@ -3,9 +3,11 @@ const { spawn } = require('child_process');
 const command = process.argv[2] || 'start';
 const mockPort = process.env.MOCK_SERVER_PORT || '4010';
 
+const viteArgs = command === 'build' ? ['exec', 'vite', 'build'] : ['exec', 'vite'];
+
 const child = spawn(
   'pnpm',
-  ['exec', 'react-scripts', command],
+  viteArgs,
   {
     stdio: 'inherit',
     shell: process.platform === 'win32',

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { getCurrentWeather } from '../../utils/api/weatherService';
+import { weatherSignal } from '../../signals/weatherSignal';
 import {
   enqueueEvent,
   getPlayback,
@@ -185,23 +185,10 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
 
   useEffect(() => {
     if (!isVisible) return undefined;
-
-    let cancelled = false;
-    const refreshWeather = async () => {
-      try {
-        const nextWeather = await getCurrentWeather();
-        if (!cancelled) setWeather(nextWeather);
-      } catch {
-        if (!cancelled) setWeather(null);
-      }
-    };
-
-    refreshWeather();
-    const interval = window.setInterval(refreshWeather, 300000);
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
+    const unsub = weatherSignal.subscribe((nextWeather) => {
+      setWeather(nextWeather);
+    });
+    return () => unsub();
   }, [isVisible]);
 
   useEffect(() => {
@@ -276,7 +263,6 @@ export default function TinkerHubMascot({ makerCount, currentView, isVisible }) 
       window.clearTimeout(schedulerTimer.current);
       window.clearTimeout(fadeTimer.current);
       window.clearTimeout(wordmarkTimer.current);
-      window.clearInterval(watchdogTimer.current);
       setPreviousPose(null);
     };
   }, [isVisible, scheduleNext, selectNextPose, transitionTo]);

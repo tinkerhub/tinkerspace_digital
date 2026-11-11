@@ -1,48 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { getCurrentWeather } from '../../utils/api/weatherService';
+import React from 'react';
+import { timeStringSignal, dateCharsSignal } from '../../signals/clockSignal';
+import { weatherSignal } from '../../signals/weatherSignal';
 
-export default React.memo(function Header({ totalMakers, isDarkMode, setManualTheme }) {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [weather, setWeather] = useState(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const fetchWeather = async () => {
-      const weatherData = await getCurrentWeather();
-      setWeather(weatherData);
-    };
-    fetchWeather();
-    // Update weather every 5 minutes
-    const weatherTimer = setInterval(fetchWeather, 300000);
-    return () => clearInterval(weatherTimer);
-  }, []);
-
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-  const getWeatherIcon = (description) => {
-    // Minimalist monochrome thermometer icon
+const getWeatherIcon = (description) => {
+  const desc = (description || '').toLowerCase();
+  if (desc.includes('rain') || desc.includes('drizzle')) {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+        <line x1="16" y1="13" x2="16" y2="21" />
+        <line x1="8" y1="13" x2="8" y2="21" />
+        <line x1="12" y1="15" x2="12" y2="23" />
+        <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" />
       </svg>
     );
-  };
+  }
+  if (desc.includes('thunderstorm')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9" />
+        <polyline points="13 11 9 17 15 17 11 23" />
+      </svg>
+    );
+  }
+  if (desc.includes('cloud') || desc.includes('fog')) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+    </svg>
+  );
+};
+
+export default React.memo(function Header({ totalMakers, isDarkMode, setManualTheme }) {
+  const weather = weatherSignal.value;
 
   return (
     <div className="w-full flex flex-col items-center z-10 sticky top-0 pt-[clamp(1rem,4vh,3rem)] pb-[clamp(0.5rem,2vh,1.5rem)] font-geist pointer-events-none">
-      <div className="flex items-center gap-6 bg-white/40 dark:bg-black/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-xl shadow-black/5 dark:shadow-black/20 px-6 py-3 rounded-full pointer-events-auto transition-all duration-500 scale-[1.06]">
+      <div className="flex items-center gap-6 bg-white/80 dark:bg-black/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xl shadow-black/5 dark:shadow-black/20 px-6 py-3 rounded-full pointer-events-auto transition-all duration-500 scale-[1.06]">
         
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
@@ -95,15 +94,10 @@ export default React.memo(function Header({ totalMakers, isDarkMode, setManualTh
       {/* Large Minimalist Time & Date Display */}
       <div className="absolute top-6 right-12 flex flex-col items-end z-20 pointer-events-none opacity-90 text-gray-900 dark:text-white transition-colors duration-500">
         <div className="text-6xl font-black tracking-tighter whitespace-nowrap">
-          {formatTime(currentTime)}
+          {timeStringSignal}
         </div>
         <div className="flex justify-between w-full text-xs font-bold text-gray-500 mt-1 uppercase">
-          {currentTime.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          }).toUpperCase().split('').map((char, i) => (
+          {dateCharsSignal.value.map((char, i) => (
             <span key={i}>{char === ' ' ? '\u00A0' : char}</span>
           ))}
         </div>

@@ -36,7 +36,8 @@ create policy "anon read settings" on settings for select using (true);
 create policy "admin write settings" on settings for update using (auth.role() = 'authenticated');
 
 create policy "anon read screens" on screens for select using (true);
-create policy "anon register screens" on screens for insert with check (true);
+create policy "anon register screens" on screens for insert with check (status = 'unclaimed' and space_id is null);
+create policy "anon update last_seen" on screens for update to anon using (true) with check (true);
 create policy "admin update screens" on screens for update using (auth.role() = 'authenticated');
 create policy "admin delete screens" on screens for delete using (auth.role() = 'authenticated');
 

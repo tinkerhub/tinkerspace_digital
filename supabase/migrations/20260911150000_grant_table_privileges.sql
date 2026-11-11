@@ -9,4 +9,5 @@ grant select on public.settings to anon, authenticated;
 grant update on public.settings to authenticated;
 
 grant select, insert on public.screens to anon;
+grant update (last_seen) on public.screens to anon;
 grant select, insert, update, delete on public.screens to authenticated;

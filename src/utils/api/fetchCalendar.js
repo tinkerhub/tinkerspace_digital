@@ -13,6 +13,43 @@
 import { buildCalendarDisplay } from '../calendar/normalizeEvents';
 
 const REQUEST_TIMEOUT_MS = 10000;
+const MAX_CACHE_AGE_MS = 72 * 60 * 60 * 1000; // 72 hours max
+const MAX_LIVE_EVENT_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours max for live event
+
+function getCalendarCacheKey(spaceId) {
+  return spaceId ? `tinkerspace_cached_calendar_${spaceId}` : 'tinkerspace_cached_calendar';
+}
+
+function getFallbackWithCache(spaceId) {
+  if (typeof window !== 'undefined') {
+    try {
+      const key = getCalendarCacheKey(spaceId);
+      let cachedStr = localStorage.getItem(key);
+      if (!cachedStr && spaceId) {
+        cachedStr = localStorage.getItem('tinkerspace_cached_calendar');
+      }
+      if (cachedStr) {
+        const cached = JSON.parse(cachedStr);
+        if (cached && typeof cached === 'object') {
+          const cacheAge = cached.generated_at ? Date.now() - new Date(cached.generated_at).getTime() : Infinity;
+          if (cacheAge < MAX_CACHE_AGE_MS) {
+            console.warn('[fetchCalendar] Network offline or error. Serving cached calendar.');
+            return {
+              ...cached,
+              // Suppress live event if cache is older than 24h
+              live_event: cacheAge < MAX_LIVE_EVENT_AGE_MS ? cached.live_event : null,
+            };
+          } else {
+            console.warn('[fetchCalendar] Cached calendar expired (> 72h).');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[fetchCalendar] Failed to parse cached calendar:', e);
+    }
+  }
+  return FALLBACK_RESPONSE;
+}
 
 /**
  * Fallback payload returned when the API call fails for any reason.
@@ -96,7 +133,7 @@ export const fetchCalendarDisplay = async (spaceId) => {
       console.error(
         `[fetchCalendar] HTTP ${response.status} — ${response.statusText}`
       );
-      return FALLBACK_RESPONSE;
+      return getFallbackWithCache(spaceId);
     }
 
     // ── Guard: content type ───────────────────────────────────
@@ -105,7 +142,7 @@ export const fetchCalendarDisplay = async (spaceId) => {
       console.error(
         '[fetchCalendar] Response is not JSON. Content-Type:', contentType
       );
-      return FALLBACK_RESPONSE;
+      return getFallbackWithCache(spaceId);
     }
 
     // ── Parse JSON ────────────────────────────────────────────
@@ -114,10 +151,20 @@ export const fetchCalendarDisplay = async (spaceId) => {
     // The API wraps payloads in { status, data }.
     // Guard against unexpected shapes.
     if (!json || !json.status || !Array.isArray(json.data)) {
-      return FALLBACK_RESPONSE;
+      return getFallbackWithCache(spaceId);
     }
 
-    return buildCalendarDisplay(json.data, { spaceId });
+    const display = buildCalendarDisplay(json.data, { spaceId });
+    if (display && display.generated_at && typeof window !== 'undefined') {
+      try {
+        const key = getCalendarCacheKey(spaceId);
+        localStorage.setItem(key, JSON.stringify(display));
+        if (!spaceId || spaceId === 1) {
+          localStorage.setItem('tinkerspace_cached_calendar', JSON.stringify(display));
+        }
+      } catch (e) {}
+    }
+    return display;
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -129,6 +176,6 @@ export const fetchCalendarDisplay = async (spaceId) => {
       console.error('[fetchCalendar] Fetch failed:', error.message);
     }
 
-    return FALLBACK_RESPONSE;
+    return getFallbackWithCache(spaceId);
   }
 };

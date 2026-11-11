@@ -1,22 +1,21 @@
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import React from 'react';
+import { render } from 'preact';
+import { act } from 'preact/test-utils';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import TinkerHubMascot from './TinkerHubMascot';
 
-jest.mock('../../utils/api/weatherService', () => ({
-  getCurrentWeather: jest.fn(() => Promise.resolve(null)),
+vi.mock('../../utils/api/weatherService', () => ({
+  getCurrentWeather: vi.fn(() => Promise.resolve(null)),
 }));
 
 describe('TinkerHubMascot fail-safe lifecycle', () => {
   let container;
-  let root;
   let originalImage;
 
   beforeEach(() => {
-    global.IS_REACT_ACT_ENVIRONMENT = true;
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     container = document.createElement('div');
     document.body.appendChild(container);
-    root = createRoot(container);
     originalImage = global.Image;
 
     global.Image = class {
@@ -28,30 +27,30 @@ describe('TinkerHubMascot fail-safe lifecycle', () => {
 
   afterEach(() => {
     act(() => {
-      root.unmount();
+      render(null, container);
     });
     document.body.removeChild(container);
     global.Image = originalImage;
-    jest.useRealTimers();
-    delete global.IS_REACT_ACT_ENVIRONMENT;
+    vi.useRealTimers();
   });
 
   it('does not resume mascot scheduling after fail-safe activation', async () => {
-    const setTimeoutSpy = jest.spyOn(window, 'setTimeout');
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
 
     await act(async () => {
-      root.render(
+      render(
         <TinkerHubMascot
           makerCount={1}
           currentView="makers"
           isVisible
         />,
+        container
       );
       await Promise.resolve();
     });
 
     await act(async () => {
-      jest.runOnlyPendingTimers();
+      vi.runOnlyPendingTimers();
       await Promise.resolve();
     });
 
@@ -60,12 +59,13 @@ describe('TinkerHubMascot fail-safe lifecycle', () => {
     setTimeoutSpy.mockClear();
 
     await act(async () => {
-      root.render(
+      render(
         <TinkerHubMascot
           makerCount={2}
           currentView="makers"
           isVisible
         />,
+        container
       );
       await Promise.resolve();
     });
@@ -76,3 +76,4 @@ describe('TinkerHubMascot fail-safe lifecycle', () => {
     setTimeoutSpy.mockRestore();
   });
 });
+

@@ -31,13 +31,14 @@ export default function UserBadges({ name }) {
       flexDirection: 'column',
       gap: '4px'
     }}>
-      {userBadges
-        .sort((a, b) => BADGE_METADATA[a].priority - BADGE_METADATA[b].priority)
+      {[...userBadges]
+        .filter((badge) => BADGE_METADATA[badge])
+        .sort((a, b) => (BADGE_METADATA[a]?.priority ?? 99) - (BADGE_METADATA[b]?.priority ?? 99))
         .map((badgeType) => (
           <AchievementBadge 
             key={badgeType}
             type={badgeType}
-            alt={BADGE_METADATA[badgeType].alt}
+            alt={BADGE_METADATA[badgeType]?.alt || badgeType}
           />
         ))}
     </div>
